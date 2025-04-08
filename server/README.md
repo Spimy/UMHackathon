@@ -65,4 +65,4 @@ Once the server is running, you can access:
 ## Available Endpoints
 
 - `GET /`: Welcome message
-- `GET /health`: Health check endpoint
+- `POST /ollama/generate`: Use ollama (Mistral) to stream output
