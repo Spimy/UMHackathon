@@ -51,7 +51,7 @@
 
 				// Convert the chunk to text and append it
 				const chunk = new TextDecoder().decode(value);
-				currentStreamingMessage += chunk;
+				currentStreamingMessage = chunk;
 			}
 
 			// Add the complete response to messages
