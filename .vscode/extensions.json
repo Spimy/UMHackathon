@@ -26,7 +26,8 @@
 		"dskwrk.vscode-generate-getter-setter",
 		"ms-vscode-remote.remote-wsl",
 		"svelte.svelte-vscode",
-		"stordahl.sveltekit-snippets"
+		"stordahl.sveltekit-snippets",
+		"ms-python.black-formatter"
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
 	"unwantedRecommendations": [
