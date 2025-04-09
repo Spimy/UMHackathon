@@ -30,10 +30,9 @@ available_APIs = [
 class Prompt(BaseModel):
     prompt: str
 
-# Define Result Models
-
 
 class Item(BaseModel):
+    '''Define Result Model'''
     id: int | None = None
     name: str
     description: str
