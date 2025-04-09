@@ -21,8 +21,6 @@
 		{ label: 'Alerts', href: '/alerts', icon: '/icons/alerts.svg' },
 		{ label: 'Account', href: '/account', icon: '/icons/user.svg' }
 	];
-
-	const handleLogout = () => {};
 </script>
 
 <header class="bg-primary text-tertiary px-3 py-6">
@@ -52,11 +50,11 @@
 		</ul>
 
 		<!-- Log Out Button -->
-		<button
-			onclick={handleLogout}
-			class="text-mdsemi mt-auto w-full cursor-pointer rounded-lg bg-red-800 py-3 text-white transition duration-300 hover:bg-red-700"
+		<a
+			href="/auth/signout"
+			class="text-mdsemi mt-auto w-full cursor-pointer rounded-lg bg-red-800 py-3 text-center text-white transition duration-300 hover:bg-red-700"
 		>
-			Log Out
-		</button>
+			Sign Out
+		</a>
 	</nav>
 </header>
