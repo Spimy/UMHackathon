@@ -1,14 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 import logging
-import json
 from pydantic import BaseModel
 import httpx
 from pydantic_ai import Agent, RunContext
 from typing import List, Union
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
-from datetime import datetime, timezone
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -64,7 +62,7 @@ async def translate_prompt(prompt:Prompt, target_language='en'):
             response_json = response.json()
             prompt.prompt = response_json.get("translatedText", "")
         except httpx.RequestError as e:
-            print(f"Request failed: {e}")
+            print(f"Translation failed: {e}")
         
     return prompt
 
@@ -143,8 +141,3 @@ async def generate(prompt : Prompt, context = "These are the previous prompts an
     else:
         return StreamingResponse(generate_stream(chatbot_agent,prompt), media_type="text/event-stream")
 
-
-
-
-                        
-    
