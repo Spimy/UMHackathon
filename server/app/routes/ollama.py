@@ -9,7 +9,8 @@ from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 # Configure logging
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.ERROR,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 router = APIRouter()
 
@@ -25,28 +26,34 @@ available_APIs = [
     }
 ]
 
+
 class Prompt(BaseModel):
     prompt: str
 
 # Define Result Models
+
+
 class Item(BaseModel):
     id: int | None = None
     name: str
     description: str
     price: float
 
+
 ollama_model = OpenAIModel(
     model_name='mistral', provider=OpenAIProvider(base_url='http://localhost:11434/v1')
 )
 
-async def generate_stream(agent,prompt: Prompt):
+
+async def generate_stream(agent, prompt: Prompt):
     async with agent.run_stream(prompt.prompt) as result:
         async for text in result.stream(debounce_by=0.01):
-                yield text
-                
+            yield text
+
     convo_history.append({"user": prompt, "bot": result})
 
-async def translate_prompt(prompt:Prompt, target_language='en'):
+
+async def translate_prompt(prompt: Prompt, target_language='en'):
     url = "https://translate.spimy.dev/translate"
     headers = {"Content-Type": "application/json"}
     data = {
@@ -63,40 +70,41 @@ async def translate_prompt(prompt:Prompt, target_language='en'):
             prompt.prompt = response_json.get("translatedText", "")
         except httpx.RequestError as e:
             print(f"Translation failed: {e}")
-        
+
     return prompt
 
+
 async def search_or_not(prompt: Prompt, context: str):
-        api_agent = Agent(
-            model=ollama_model,
-            system_prompt=(
-                'You are not an AI assistant. Your only task is to decide if an API call is needed and if any of the APIs that are available is suitable to obtain additional information to answer the users prompt,' +
-                'or to just act as a normal chatbot for normal conversation.' +
-                'If you do not know an answer to a question, do not make things up! that means an API call is needed.' +
-                'Generate "True" if API call is needed or "False" if a chatbot is needed as a response in this conversation.' +
-                'Example: User : "Hello" Mistral: "False, it is a greeting." ' +
-                'Example: User : "Do you sell any ice cream?" Mistral: "True, will have to call get_all_items to check inventory." ' +
-                f'\nThe available APIs are: {available_APIs}'
-            ),
-            deps_type=None,  
-            result_type=str,  
-        )
+    api_agent = Agent(
+        model=ollama_model,
+        system_prompt=(
+            'You are not an AI assistant. Your only task is to decide if an API call is needed and if any of the APIs that are available is suitable to obtain additional information to answer the users prompt,' +
+            'or to just act as a normal chatbot for normal conversation.' +
+            'If you do not know an answer to a question, do not make things up! that means an API call is needed.' +
+            'Generate "True" if API call is needed or "False" if a chatbot is needed as a response in this conversation.' +
+            'Example: User : "Hello" Mistral: "False, it is a greeting." ' +
+            'Example: User : "Do you sell any ice cream?" Mistral: "True, will have to call get_all_items to check inventory." ' +
+            f'\nThe available APIs are: {available_APIs}'
+        ),
+        deps_type=None,
+        result_type=str,
+    )
 
-        isSearch = await api_agent.run(prompt.prompt)
+    isSearch = await api_agent.run(prompt.prompt)
 
-        if 'true' in isSearch.data.lower():
-            print('Checking through database for additional information...')
-        else :
-            print('Oh I know! I can answer that without searching!')
-        return 'true' in isSearch.data.lower()
+    if 'true' in isSearch.data.lower():
+        print('Checking through database for additional information...')
+    else:
+        print('Oh I know! I can answer that without searching!')
+    return 'true' in isSearch.data.lower()
 
 chatbot_agent = Agent(
     model=ollama_model,
     system_prompt=(
         'You are a friendly AI assistant, DO NOT MAKE stuff up, only respond to the user with the information you have and say you do not know'
     ),
-    deps_type=None,  
-    result_type=str,  
+    deps_type=None,
+    result_type=str,
 )
 
 api_agent = Agent(
@@ -115,7 +123,8 @@ api_agent = Agent(
     deps_type=None,
     result_type=str,
 )
-    
+
+
 @api_agent.tool
 async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
     url = f'{FASTAPI_URL}/items'
@@ -128,16 +137,16 @@ async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
     else:
         return 'Failed to fetch items from API'
 
+
 @router.post("/ollama/generate")
-async def generate(prompt : Prompt, context = "These are the previous prompts and responses: " + str(convo_history))  -> StreamingResponse:
+async def generate(prompt: Prompt, context="These are the previous prompts and responses: " + str(convo_history)) -> StreamingResponse:
     global convo_history
-    
+
     prompt = await translate_prompt(prompt)
 
     isSearch = await search_or_not(prompt, context)
     if isSearch:
-        return StreamingResponse(generate_stream(api_agent,prompt), media_type="text/event-stream")
+        return StreamingResponse(generate_stream(api_agent, prompt), media_type="text/event-stream")
 
     else:
-        return StreamingResponse(generate_stream(chatbot_agent,prompt), media_type="text/event-stream")
-
+        return StreamingResponse(generate_stream(chatbot_agent, prompt), media_type="text/event-stream")
