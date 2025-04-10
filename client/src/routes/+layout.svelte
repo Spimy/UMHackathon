@@ -11,7 +11,7 @@
 		<Navbar brandingIconUrl="https://static.spimy.dev/logos/character.png" />
 	{/if}
 
-	<div>
+	<div class="overflow-y-auto">
 		{@render children()}
 	</div>
 </div>
