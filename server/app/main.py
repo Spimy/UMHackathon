@@ -1,10 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from __init__ import create_db
+from app import create_db
 
-from routes import (
-    ollama,
-)
+from app.routes import ollama, item, merchant, restaurant_review, keyword
 import uvicorn
 
 app = FastAPI(
@@ -21,7 +19,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
-
 
 @app.get("/")
 async def root():
