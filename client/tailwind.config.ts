@@ -7,10 +7,13 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				primary: '#00B14F',
+				primary: '#3B9663',
 				secondary: '#000000',
 				tertiary: '#FEFEFE',
-				highlight: '#18481A'
+				highlight: '#18481A',
+				bentoPurple: '#9F9FF8',
+				bentoDark: '#252828',
+				bentoLightBlue: '#92BFFF'
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif']
