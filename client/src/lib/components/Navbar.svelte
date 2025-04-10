@@ -41,6 +41,7 @@
 						class="{page.url.pathname.includes(href)
 							? 'bg-highlight'
 							: ''} hover:bg-highlight flex w-full flex-col items-center rounded-lg p-4 text-center transition duration-300 ease-in-out"
+						aria-current={page.url.pathname === href ? 'page' : null}
 					>
 						<img src={icon} alt="{label} Icon" />
 						<span class="text-mdsemi">{label}</span>
