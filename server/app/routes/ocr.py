@@ -4,17 +4,21 @@ from google.genai import types
 import os
 import dotenv
 from scan import DocScanner
+from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 
 dotenv.load_dotenv()
 
+router = APIRouter()
 
-def generate():
+@router.post("/OCR/generate")
+def generate(image: str = "input") -> StreamingResponse:
     client = genai.Client(
         api_key=os.environ.get("GEMINI_API_KEY"),
     )
 
     scanner = DocScanner()
-    encoded_string = scanner.scan("input.jpg")
+    encoded_string = scanner.scan("../../../shared/images/{image}.jpg")
 
     model = "gemini-2.0-flash"
     contents = [
@@ -64,18 +68,12 @@ def generate():
         response_mime_type="text/plain",
     )
 
-    final_str = ''
-    for chunk in client.models.generate_content_stream(
-        model=model,
-        contents=contents,
-        config=generate_content_config,
-    ):
-        final_str += chunk.text
-        print(chunk.text, end="")
+    def generate_stream():
+        for chunk in client.models.generate_content_stream(
+            model=model,
+            contents=contents,
+            config=generate_content_config,
+        ):
+            yield chunk.content.parts[0].text
 
-    with open('output.txt', 'w') as f:
-        f.write(final_str)
-
-
-if __name__ == "__main__":
-    generate()
+    return StreamingResponse(generate_stream(), media_type="text/plain")

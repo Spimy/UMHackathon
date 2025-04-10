@@ -7,6 +7,7 @@ from pydantic_ai import Agent, RunContext
 from typing import List, Union
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR,
@@ -26,7 +27,6 @@ available_APIs = [
     }
 ]
 
-
 class Prompt(BaseModel):
     prompt: str
 
@@ -38,16 +38,14 @@ class Item(BaseModel):
     description: str
     price: float
 
-
 ollama_model = OpenAIModel(
     model_name='mistral', provider=OpenAIProvider(base_url='http://localhost:11434/v1')
 )
 
-
 async def generate_stream(agent, prompt: Prompt):
     async with agent.run_stream(prompt.prompt) as result:
         async for text in result.stream(debounce_by=0.01):
-            yield text
+            yield text.strip()
 
     convo_history.append({"user": prompt, "bot": result})
 
@@ -72,30 +70,29 @@ async def translate_prompt(prompt: Prompt, target_language='en'):
 
     return prompt
 
-
 async def search_or_not(prompt: Prompt, context: str):
-    api_agent = Agent(
+    category_agent = Agent(
         model=ollama_model,
         system_prompt=(
             'You are not an AI assistant. Your only task is to decide if an API call is needed and if any of the APIs that are available is suitable to obtain additional information to answer the users prompt,' +
             'or to just act as a normal chatbot for normal conversation.' +
             'If you do not know an answer to a question, do not make things up! that means an API call is needed.' +
-            'Generate "True" if API call is needed or "False" if a chatbot is needed as a response in this conversation.' +
-            'Example: User : "Hello" Mistral: "False, it is a greeting." ' +
-            'Example: User : "Do you sell any ice cream?" Mistral: "True, will have to call get_all_items to check inventory." ' +
+            'Respond with "1" if it is an inquiry/plotting a graph about inventory ' +
+            'Respond with "2" if it is an inquiry about competitors '
+            'Respond with "0" otherwise' +
+            'Example: User : "Hello" Mistral: "{ "category": 0, "reasoning":"it is just a common greeting."  }" ' +
+            'User : "Do you sell any ice cream?" Mistral: "{"category": 1, "reasoning":"Get_Items needs to be called" }" '  +
+            'Respond in json format.'+
             f'\nThe available APIs are: {available_APIs}'
         ),
         deps_type=None,
         result_type=str,
     )
 
-    isSearch = await api_agent.run(prompt.prompt)
-
-    if 'true' in isSearch.data.lower():
-        print('Checking through database for additional information...')
-    else:
-        print('Oh I know! I can answer that without searching!')
-    return 'true' in isSearch.data.lower()
+    result = await category_agent.run(prompt.prompt)
+    result = json.loads(result.data)
+    print("category: " + str(result["category"]) + " reasoning: " + result["reasoning"])
+    return result['category']
 
 chatbot_agent = Agent(
     model=ollama_model,
@@ -144,25 +141,27 @@ chatbot_agent = Agent(
     result_type=str,
 )
 
-api_agent = Agent(
+inventory_agent = Agent(
     model=ollama_model,
-    name="API_Caller_Responder",
+    name="Inventory_Agent",
     system_prompt=(
-        "You are an AI agent that can call tools to help answer a store owner's questions.\n"
+        "You are an AI agent that can call tools to help answer a store owner's questions about his inventory.\n"
         "You HAVE access to some APIs, you MUST use the tools directly first and use its result to respond.\n"
         "You are not to generate speculative or irrelevant content, additional commentary, explanations, questions or off-topic facts.\n"
+        "Do not provide any information that is not based on the tools available, and do not mention what you are going to do.\n"
+        "If you user asks you to plot a graph, you MUST get the data from the API first and then generate the data points in JSON,\n"
         "For example:\n"
-        "user: 'What are the items currently available', Mistral: 'Here are the items currently available: Item A, Item B, ...'\n"
-        "user: 'Do we still have any more X?', Mistral: 'It seems that we do not have any more X left.'\n"
-        "If you do not have any information to generate from the tools, simply reply 'I am unable to provide that information'.\n"
+        "user: 'What are the items currently available', Mistral: '{\"items\": [{\"name\": \"Item A\", \"quantity\": 10}, {\"name\": \"Item B\", \"quantity\": 5}]}, placeholder information must be replaced with REAL information'\n"
+        "user: 'Do we still have any more X?', Mistral: '{\"item\": \"X\", \"available\": false}'\n"
+        "user: 'Plot a graph of my inventory' Mistral: '{\"graph\": {\"type\": \"pie\", \"data\": [{\"name\": \"Item A\", \"quantity\": 10}, {\"name\": \"Item B\", \"quantity\": 5}]}}'\n"
+        "If you do not have any information to generate from the tools, simply reply '{\"error\": \"I am unable to provide that information\"}'.\n"
         "DO NOT ever provide placeholder text or invent information. ONLY provide factual results based on the tools available.\n"
     ),
     deps_type=None,
     result_type=str,
 )
 
-
-@api_agent.tool
+@inventory_agent.tool
 async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
     url = f'{FASTAPI_URL}/items'
     async with httpx.AsyncClient() as client:
@@ -174,16 +173,14 @@ async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
     else:
         return 'Failed to fetch items from API'
 
-
 @router.post("/ollama/generate")
 async def generate(prompt: Prompt, context="These are the previous prompts and responses: " + str(convo_history)) -> StreamingResponse:
     global convo_history
 
     prompt = await translate_prompt(prompt)
 
-    isSearch = await search_or_not(prompt, context)
-    if isSearch:
-        return StreamingResponse(generate_stream(api_agent, prompt), media_type="text/event-stream")
-
+    prompt_category = await search_or_not(prompt, context)
+    if prompt_category == 1:
+        return StreamingResponse(generate_stream(inventory_agent, prompt), media_type="text/event-stream")
     else:
         return StreamingResponse(generate_stream(chatbot_agent, prompt), media_type="text/event-stream")
