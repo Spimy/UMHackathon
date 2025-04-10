@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from __init__ import create_db
+
 from routes import (
     ollama,
 )
@@ -27,4 +29,5 @@ async def root():
 
 
 if __name__ == "__main__":
+    create_db()
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

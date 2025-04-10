@@ -1,7 +1,8 @@
 from sqlmodel import SQLModel, create_engine
 from sqlalchemy.orm import sessionmaker
+from models import item, merchant, restaurant_review, keyword
 
-DATABASE_URL = "postgresql://username:password@localhost/dbname"
+DATABASE_URL = "postgresql://postgres:abcd1234@localhost:5432/UMHack"
 
 # Create a connection engine to the database
 engine = create_engine(DATABASE_URL, echo=True)

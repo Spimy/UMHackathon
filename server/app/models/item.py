@@ -1,17 +1,9 @@
-from pydantic import BaseModel
+from sqlmodel import SQLModel, Field
 from typing import Optional
 
-class ItemBase(BaseModel):
+class Item(SQLModel, table=True):
+    item_id: Optional[int] = Field(default=None, primary_key=True)
     cuisine_tag: str
     item_name: str
     item_price: float
     merchant_id: str
-
-class ItemCreate(ItemBase):
-    pass
-
-class Item(ItemBase):
-    item_id: int
-
-    class Config:
-        orm_mode = True
