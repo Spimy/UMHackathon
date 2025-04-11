@@ -1,5 +1,5 @@
 from sqlmodel import Session
-from app.models.restaurant_review import RestaurantReview
+from models.restaurant_review import RestaurantReview
 
 
 def create_review(db: Session, review_data: dict):
