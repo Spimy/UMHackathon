@@ -30,6 +30,16 @@
 
 The goal is to develop an intelligent, chat-based AI assistant that proactively provides merchant-partners with **valuable insights**, **personalized guidance**, and **operational alerts**.
 
+## Data Utilization
+
+The data used in this project can be found [here](https://drive.google.com/drive/folders/1q8wpploa41fXcw823SSEkb6xfyDQcsVd?usp=drive_link).
+
+Some of the data were provided by the hosts of UMHackathon, while some were generated using AI.
+
+## Personalization Strategies
+
+
+
 ## Solution Architecture
 
 <div align="center">
@@ -63,7 +73,7 @@ The goal is to develop an intelligent, chat-based AI assistant that proactively 
 
 Team 418 members:
 
-- [Justin Yong Wenn Weii] - Product Manager
+- [Justin Yong Wenn Weii](https://github.com/Justin-yww) - Product Manager
 - [William Law Hong Waye (Spimy)](https://github.com/Spimy) - Tech Lead
 - [Alex Chee Kai Hong](https://github.com/datgai) - AI Engineer
 - [Joshua Edwin Rene Bonham](https://github.com/JBBru-helloworld) - UI Designer
