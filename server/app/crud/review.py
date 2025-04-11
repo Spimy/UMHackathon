@@ -14,3 +14,6 @@ def create_review(session: SessionDep, review_data: dict):
 def get_reviews(session: SessionDep, skip: int = 0, limit: int = 10):
     return session.execute(select(Review).offset(skip).limit(limit)).all()
 
+def get_reviews_by_merchant(session: SessionDep, merchant_id: str) -> list[Review]:
+    statement = select(Review).where(Review.merchant_id == merchant_id)
+    return session.execute(statement).scalars().all()
