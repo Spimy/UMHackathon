@@ -13,7 +13,7 @@ import json
 logging.basicConfig(level=logging.ERROR,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-router = APIRouter()
+router = APIRouter(tags=["ollama"])
 
 FASTAPI_URL = "http://localhost:8000"
 
@@ -27,6 +27,7 @@ available_APIs = [
     }
 ]
 
+
 class Prompt(BaseModel):
     prompt: str
 
@@ -38,9 +39,11 @@ class Item(BaseModel):
     description: str
     price: float
 
+
 ollama_model = OpenAIModel(
     model_name='mistral', provider=OpenAIProvider(base_url='http://localhost:11434/v1')
 )
+
 
 async def generate_stream(agent, prompt: Prompt):
     async with agent.run_stream(prompt.prompt) as result:
@@ -70,6 +73,7 @@ async def translate_prompt(prompt: Prompt, target_language='en'):
 
     return prompt
 
+
 async def search_or_not(prompt: Prompt, context: str):
     category_agent = Agent(
         model=ollama_model,
@@ -81,8 +85,8 @@ async def search_or_not(prompt: Prompt, context: str):
             'Respond with "2" if it is an inquiry about competitors '
             'Respond with "0" otherwise' +
             'Example: User : "Hello" Mistral: "{ "category": 0, "reasoning":"it is just a common greeting."  }" ' +
-            'User : "Do you sell any ice cream?" Mistral: "{"category": 1, "reasoning":"Get_Items needs to be called" }" '  +
-            'Respond in json format.'+
+            'User : "Do you sell any ice cream?" Mistral: "{"category": 1, "reasoning":"Get_Items needs to be called" }" ' +
+            'Respond in json format.' +
             f'\nThe available APIs are: {available_APIs}'
         ),
         deps_type=None,
@@ -91,7 +95,8 @@ async def search_or_not(prompt: Prompt, context: str):
 
     result = await category_agent.run(prompt.prompt)
     result = json.loads(result.data)
-    print("category: " + str(result["category"]) + " reasoning: " + result["reasoning"])
+    print("category: " + str(result["category"]
+                             ) + " reasoning: " + result["reasoning"])
     return result['category']
 
 chatbot_agent = Agent(
@@ -161,6 +166,7 @@ inventory_agent = Agent(
     result_type=str,
 )
 
+
 @inventory_agent.tool
 async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
     url = f'{FASTAPI_URL}/items'
@@ -172,6 +178,7 @@ async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
         return [Item(**item) for item in items_data]
     else:
         return 'Failed to fetch items from API'
+
 
 @router.post("/ollama/generate")
 async def generate(prompt: Prompt, context="These are the previous prompts and responses: " + str(convo_history)) -> StreamingResponse:

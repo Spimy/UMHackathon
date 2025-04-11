@@ -9,7 +9,8 @@ from fastapi.responses import StreamingResponse
 
 dotenv.load_dotenv()
 
-router = APIRouter()
+router = APIRouter(tags=["OCR"])
+
 
 @router.post("/OCR/generate")
 def generate(image: str = "input") -> StreamingResponse:

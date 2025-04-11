@@ -4,7 +4,7 @@ import crud
 import schemas
 from models import get_db
 
-router = APIRouter()
+router = APIRouter(tags=["restaurant_reviews"])
 
 
 @router.post("/reviews/", response_model=schemas.RestaurantReview)

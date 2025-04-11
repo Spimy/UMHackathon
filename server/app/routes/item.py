@@ -4,7 +4,7 @@ import crud
 import schemas
 from models import get_db
 
-router = APIRouter()
+router = APIRouter(tags=["items"])
 
 
 @router.post("/items/", response_model=schemas.Item)
