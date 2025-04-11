@@ -8,7 +8,7 @@ from settings import GEMINI_API_KEY
 router = APIRouter(tags=["OCR"])
 
 
-@router.post("/OCR/generate")
+@router.post("/ocr/generate")
 def generate(image: UploadFile) -> StreamingResponse:
     client = genai.Client(
         api_key=GEMINI_API_KEY,
