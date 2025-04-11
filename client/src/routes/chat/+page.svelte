@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { PUBLIC_API_URL } from '$env/static/public';
 	import { marked } from 'marked';
 	import sanitizeHtml from 'sanitize-html';
 	import { tick } from 'svelte';
@@ -101,7 +102,7 @@
 
 		try {
 			// Send the text message to the existing endpoint
-			const response = await fetch('http://localhost:8000/ollama/generate', {
+			const response = await fetch(`${PUBLIC_API_URL}/ollama/generate`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
