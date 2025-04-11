@@ -11,6 +11,10 @@ app = FastAPI(
 )
 
 app.include_router(ollama.router)
+app.include_router(item.router)
+app.include_router(merchant.router)
+app.include_router(restaurant_review.router)
+app.include_router(keyword.router)
 
 # Configure CORS
 app.add_middleware(
