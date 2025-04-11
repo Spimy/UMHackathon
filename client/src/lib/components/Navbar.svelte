@@ -29,7 +29,7 @@
 	<nav class="flex h-full flex-col items-center space-y-8">
 		<!-- Branding -->
 		<a href="/overview" class="flex flex-col items-center space-y-2">
-			<img src={brandingIconUrl} alt="Brand Logo" class="h-16 w-16 object-contain" />
+			<img src={brandingIconUrl} alt="Brand Logo" class="h-16 w-16 rounded-full object-contain" />
 			<span class="text-mdsemi drop-shadow-lg">{merchantName}</span>
 		</a>
 
