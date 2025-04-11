@@ -1,5 +1,5 @@
 from sqlmodel import Session
-from app.models.item import Item
+from models.item import Item
 
 
 def create_item(db: Session, item_data: dict):
