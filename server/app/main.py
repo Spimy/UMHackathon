@@ -2,14 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from routes import ollama, item, merchant, restaurant_review, keyword
+from models import create_db_and_tables, populate_database
 import uvicorn
-
-from models import create_db_and_tables
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
+    populate_database()
     yield
 
 app = FastAPI(
