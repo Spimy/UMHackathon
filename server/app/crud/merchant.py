@@ -17,3 +17,7 @@ def get_merchants(session: SessionDep, skip: int = 0, limit: int = 10):
 
 def get_user(session: SessionDep, email: str):
     return session.execute(select(User).where(User.user_email == email)).first()
+
+
+def get_merchant_by_id(session: SessionDep, merchant_id: str):
+    return session.execute(select(Merchant).where(Merchant.merchant_id == merchant_id)).first()

@@ -10,7 +10,6 @@ def create_review(session: SessionDep, review_data: dict):
     session.refresh(db_review)
     return db_review
 
-
 def get_reviews(session: SessionDep, skip: int = 0, limit: int = 10):
     return session.execute(select(Review).offset(skip).limit(limit)).all()
 

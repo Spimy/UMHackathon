@@ -186,6 +186,7 @@ review_agent = Agent(
     system_prompt=(
         "You are an AI agent that can that summarizes how a merchant is doing based on user reviews in json.\n"
         "Emphasize on the positive and negative aspects of the reviews, especially on the pricing, environment, customer service and the food quality\n"
+        "Summarize within 40 - 50 words"
     ),
     deps_type=None,
     result_type=str,
@@ -204,16 +205,27 @@ async def generate(prompt: Prompt, context="These are the previous prompts and r
     else:
         return StreamingResponse(generate_stream(chatbot_agent, prompt), media_type="text/event-stream")
     
-@router.post("/ollama/summarize_reviews")
-async def summarize_reviews(merchant_id: str) -> StreamingResponse:
+@router.get("/ollama/summarize_reviews/{merchant_id}")
+async def summarize_reviews(merchant_id: str):
     url = f'{FASTAPI_URL}/reviews/{merchant_id}'
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
 
     if response.status_code == 200:
         reviews_data = response.json()
-        reviews_text = " ".join([review['review'] for review in reviews_data])
-        prompt = Prompt(prompt=reviews_text)
-        return StreamingResponse(generate_stream(review_agent, prompt), media_type="text/event-stream")
+
+        # Extract reviews and ratings
+        reviews = [review["review"] for review in reviews_data]
+        ratings = [review["rating"] for review in reviews_data]
+
+        # Calculate average rating
+        average_rating = sum(ratings) / len(ratings) if ratings else 0
+
+        review_summary = await review_agent.run(reviews)
+
+        return {
+            "average_rating": average_rating,
+            "review_summary": review_summary.data
+        }
     else:
-        return StreamingResponse("Failed to fetch reviews from API", media_type="text/event-stream")
+        return {"error": "Unable to fetch reviews from API"}

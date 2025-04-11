@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { PUBLIC_API_URL } from '$env/static/public';
 	import StatCard, { colours, type Colour } from '$lib/components/StatCard.svelte';
 	import { type ApexOptions } from 'apexcharts';
 	import { onMount } from 'svelte';
@@ -76,11 +77,54 @@
 	let merchantChart: HTMLDivElement | null = $state(null);
 	let trafficChart: HTMLDivElement | null = $state(null);
 
+	let merchant1Name = $state('Loading...');
+	let merchant2Name = $state('Loading...');
+	let merchant1ReviewSummary = $state('Loading...');
+	let merchant2ReviewSummary = $state('Loading...');
+	let merchant1Rating = $state('Loading...');
+	let merchant2Rating = $state('Loading...');
+
 	onMount(() => {
 		import('apexcharts').then((ApexCharts) => {
 			new ApexCharts.default(merchantChart, merchartChartOptions).render();
 			new ApexCharts.default(trafficChart, trafficChartOptions).render();
 		});
+
+		const competitor1_id = '2e8a5';
+		const competitor2_id = '5c1f8';
+
+		(async () => {
+			try {
+				const response1 = await fetch(`${PUBLIC_API_URL}/merchants/${competitor1_id}`);
+				const response2 = await fetch(`${PUBLIC_API_URL}/merchants/${competitor2_id}`);
+				if (response1.ok) {
+					const data1 = await response1.json();
+					merchant1Name = data1.merchant_name;
+				}
+
+				if (response2.ok) {
+					const data2 = await response2.json();
+					merchant2Name = data2.merchant_name;
+				}
+
+				const reviewResponse1 = await fetch(`${PUBLIC_API_URL}/ollama/summarize_reviews/${competitor1_id}`);
+				const reviewResponse2 = await fetch(`${PUBLIC_API_URL}/ollama/summarize_reviews/${competitor2_id}`);
+
+				if (reviewResponse1.ok) {
+					const reviewData1 = await reviewResponse1.json();
+					merchant1ReviewSummary = reviewData1.review_summary;
+					merchant1Rating = Math.round(reviewData1.average_rating);
+				}
+
+				if (reviewResponse2.ok) {
+					const reviewData2 = await reviewResponse2.json();
+					merchant2ReviewSummary = reviewData2.review_summary;
+					merchant2Rating = Math.round(reviewData2.average_rating);
+				}
+			} catch (error) {
+				console.error('Failed to fetch merchant data:', error);
+			}
+		})();
 	});
 
 	interface Stat {
@@ -210,47 +254,35 @@
 	<!-- Competitor Analysis -->
 	<div class="bg-primary col-span-full row-span-1 max-h-96 rounded-xl p-4 text-white shadow">
 		<h2 class="text-lgsemi mb-5">Competitor Analysis</h2>
-		<div class="col-span-full flex flex-row">
+		<div class="col-span-full grid grid-cols-2 gap-4">
 
 			<!-- Competitor 1 -->
 			<div class="flex-1 flex flex-col">
-				<div class="flex flex-1 justify-start items-center">
+				<div class="flex h-4 justify-start items-center">
 					<img
 					src="http://static.spimy.dev/logos/character.png"
 					alt="You"
 					class="h-8 w-8 rounded-full"
 				/>
-				<span class="text-md"> Restaurant 1</span>
+				<span class="text-md">{merchant1Name}</span> 
+				<span class="text-sm m-2">{merchant1Rating} / 5</span>
 			</div>
-			<div class="m-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae aliquam quisquam doloremque deleniti commodi illum autem saepe voluptatem! Ipsum ullam maxime cumque consequatur, sequi minima natus deleniti mollitia ducimus nemo sint incidunt odit quibusdam, repellat quae magnam iusto porro? Odit nihil quasi ex explicabo deserunt nobis exercitationem expedita omnis illum!</div>
+			<div class="m-4 flex-1">{merchant1ReviewSummary}</div>
 			</div>
 			
 			<!-- Competitor 2 -->
 			<div class="flex-1 flex flex-col">
-				<div class="flex flex-1 justify-start items-center">
+				<div class="flex h-4 justify-start items-center">
 					<img
 					src="http://static.spimy.dev/logos/character.png"
 					alt="You"
 					class="h-8 w-8 rounded-full"
 				/>
-				<span class="text-md"> Restaurant 2</span>
+				<span class="text-md">{merchant2Name}</span>
+				<span class="text-sm m-2">{merchant2Rating} / 5</span>
 			</div>
-			<div class="m-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae aliquam quisquam doloremque deleniti commodi illum autem saepe voluptatem! Ipsum ullam maxime cumque consequatur, sequi minima natus deleniti mollitia ducimus nemo sint incidunt odit quibusdam, repellat quae magnam iusto porro? Odit nihil quasi ex explicabo deserunt nobis exercitationem expedita omnis illum!</div>
+			<div class="m-4 flex-1">{merchant2ReviewSummary}</div>
 			</div>
-
-			<!-- Competitor 3 -->
-			<div class="flex-1 flex flex-col">
-				<div class="flex flex-1 justify-start items-center">
-					<img
-					src="http://static.spimy.dev/logos/character.png"
-					alt="You"
-					class="h-8 w-8 rounded-full"
-				/>
-				<span class="text-md"> Restaurant 3</span>
-			</div>
-			<div class="m-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae aliquam quisquam doloremque deleniti commodi illum autem saepe voluptatem! Ipsum ullam maxime cumque consequatur, sequi minima natus deleniti mollitia ducimus nemo sint incidunt odit quibusdam, repellat quae magnam iusto porro? Odit nihil quasi ex explicabo deserunt nobis exercitationem expedita omnis illum!</div>
-			</div>
-
 		</div>
 	</div>
 </main>
