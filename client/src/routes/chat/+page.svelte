@@ -118,7 +118,7 @@
 
 				// Convert the chunk to text and append it
 				const chunk = new TextDecoder().decode(value);
-				currentStreamingMessage += chunk;
+				currentStreamingMessage = chunk;
 				markdownStreamingMessage = await marked.parse(currentStreamingMessage);
 
 				// Scroll to the bottom during streaming if auto-scroll is enabled
