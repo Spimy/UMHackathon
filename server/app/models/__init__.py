@@ -9,11 +9,11 @@ from .merchant import Merchant
 from .keyword import Keyword
 from .item import Item
 from .review import Review
-
-DATABASE_URL = "postgresql://devuser:devpassword@localhost:5432/umhackathon"
+from .user import User
+from settings import DATABASE_URI
 
 # Create a connection engine to the database
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URI, echo=True)
 
 
 def create_db_and_tables():

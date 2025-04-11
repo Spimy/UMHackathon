@@ -1,13 +1,10 @@
 import base64
 from google import genai
 from google.genai import types
-import os
-import dotenv
 from utils.scan import DocScanner
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
-
-dotenv.load_dotenv()
+from settings import GEMINI_API_KEY
 
 router = APIRouter(tags=["OCR"])
 
@@ -15,7 +12,7 @@ router = APIRouter(tags=["OCR"])
 @router.post("/OCR/generate")
 def generate(image: str = "input") -> StreamingResponse:
     client = genai.Client(
-        api_key=os.environ.get("GEMINI_API_KEY"),
+        api_key=GEMINI_API_KEY,
     )
 
     scanner = DocScanner()
