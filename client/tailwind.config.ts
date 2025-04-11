@@ -18,6 +18,21 @@ export default {
 			fontFamily: {
 				sans: ['Inter', 'sans-serif']
 			},
+			keyframes: {
+				pulse: {
+					'0%, 40%, 100%': {
+						opacity: '0.3',
+						transform: 'scale(0.85)'
+					},
+					'20%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					}
+				}
+			},
+			animation: {
+				'dot-pulse': 'pulse 1.5s infinite'
+			},
 			fontSize: {
 				sm: [
 					'0.75rem', // 12px

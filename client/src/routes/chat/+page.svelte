@@ -34,6 +34,7 @@
 	let markdownStreamingMessage = $state('');
 	let selectedImage: File | null = $state(null);
 	let imagePreview: string | null = $state(null);
+	let showThinking = $state(false);
 
 	const sanitizeOptions: sanitizeHtml.IOptions = {
 		disallowedTagsMode: 'escape'
@@ -93,6 +94,7 @@
 		imagePreview = null;
 
 		isStreaming = true;
+		showThinking = true;
 		currentStreamingMessage = '';
 
 		await tick(); // Wait for DOM updates
@@ -155,6 +157,7 @@
 			];
 		} finally {
 			isStreaming = false;
+			showThinking = false;
 			selectedImage = null;
 		}
 	};
@@ -243,7 +246,19 @@
 							<div
 								class="prose text-secondary bg-tertiary/[0.6] max-w-[70%] rounded-lg p-3 shadow-sm"
 							>
-								{@html sanitizeHtml(markdownStreamingMessage, sanitizeOptions)}
+								{#if !markdownStreamingMessage}
+									I am thinking<span class="ml-1 inline-flex gap-1">
+										<span class="bg-secondary/[0.8] animate-dot-pulse h-2 w-2 rounded-full"></span>
+										<span
+											class="bg-secondary/[0.8] animate-dot-pulse h-2 w-2 rounded-full [animation-delay:200ms]"
+										></span>
+										<span
+											class="bg-secondary/[0.8] animate-dot-pulse h-2 w-2 rounded-full [animation-delay:400ms]"
+										></span>
+									</span>
+								{:else}
+									{@html sanitizeHtml(markdownStreamingMessage, sanitizeOptions)}
+								{/if}
 							</div>
 						</div>
 					{/if}
@@ -388,3 +403,18 @@
 		</ul>
 	</aside>
 </main>
+
+<style lang="postcss">
+	@keyframes dot-pulse {
+		0%,
+		40%,
+		100% {
+			opacity: 0.3;
+			transform: scale(0.85);
+		}
+		20% {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+</style>
