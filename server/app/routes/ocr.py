@@ -1,7 +1,6 @@
 import base64
 from google import genai
 from google.genai import types
-from utils.scan import DocScanner
 from fastapi import APIRouter, UploadFile
 from fastapi.responses import StreamingResponse
 from settings import GEMINI_API_KEY
