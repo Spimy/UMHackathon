@@ -51,12 +51,12 @@ pip install -r requirements.txt
 
 ```bash
 docker compose up -d
-# and wait a bit until the postgres container has fully started 
+# and wait a bit until the postgres container has fully started
 ```
 
 2. You will need to upload the dataset into `/app/_dataset` folder
 
-> This is because the CSV files are too large and cannot be pushed to GitHub. Download the remaining datasets here: https://drive.google.com/drive/folders/1v9qEt0EJmtkHhaykEzkBKcpClV1xUvRU
+> This is because the CSV files are too large and cannot be pushed to GitHub. Download the remaining datasets here: https://drive.google.com/drive/folders/1q8wpploa41fXcw823SSEkb6xfyDQcsVd?usp=sharing
 
 3. To run the server, use:
 
