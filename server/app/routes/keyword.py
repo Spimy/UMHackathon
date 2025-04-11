@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Depends
-from sqlmodel import Session
+from fastapi import APIRouter
 import crud
-import schemas
-from models import get_session
+from schemas import Keyword, KeywordCreate
+from models import SessionDep
 
 router = APIRouter(tags=["keywords"])
 
 
-@router.post("/keywords/", response_model=schemas.Keyword)
-def create_keyword(keyword: schemas.KeywordCreate, db: Session = Depends(get_session)):
-    return crud.create_keyword(db, keyword.dict())
+@router.post("/keywords/", response_model=Keyword)
+def create_keyword(keyword: KeywordCreate, session: SessionDep):
+    return crud.create_keyword(session, keyword.dict())
 
 
-@router.get("/keywords/", response_model=list[schemas.Keyword])
-def read_keywords(skip: int = 0, limit: int = 10, db: Session = Depends(get_session)):
-    return crud.get_keywords(db, skip=skip, limit=limit)
+@router.get("/keywords/", response_model=list[Keyword])
+def read_keywords(session: SessionDep, skip: int = 0, limit: int = 10):
+    keywords = crud.get_keywords(session, skip=skip, limit=limit)
+    return [keyword[0] for keyword in keywords]

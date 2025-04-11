@@ -1,18 +1,17 @@
-from fastapi import APIRouter, Depends
-from sqlmodel import Session
+from fastapi import APIRouter
 import crud
-import schemas
-from models import get_session
+from schemas import Item, ItemCreate
+from models import SessionDep
 
 router = APIRouter(tags=["items"])
 
 
-@router.post("/items/", response_model=schemas.Item)
-def create_item(item: schemas.ItemCreate, db: Session = Depends(get_session)):
-    return crud.create_item(db, item.dict())
+@router.post("/items/", response_model=Item)
+def create_item(item: ItemCreate, session: SessionDep):
+    return crud.create_item(session, item.dict())
 
 
-@router.get("/items/", response_model=list[schemas.Item])
-def read_items(skip: int = 0, limit: int = 10, db: Session = Depends(get_session)):
-    return
-    # return crud.get_items(db, skip=skip, limit=limit)
+@router.get("/items/", response_model=list[Item])
+def read_items(session: SessionDep, skip: int = 0, limit: int = 10):
+    items = crud.get_items(session, skip=skip, limit=limit)
+    return [item[0] for item in items]

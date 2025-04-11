@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Depends
-from sqlmodel import Session
+from fastapi import APIRouter
 import crud
-import schemas
-from models import get_session
+from schemas import Merchant, MerchantCreate
+from models import SessionDep
 
 router = APIRouter(tags=["merchants"])
 
 
-@router.post("/merchants/", response_model=schemas.Merchant)
-def create_merchant(merchant: schemas.MerchantCreate, db: Session = Depends(get_session)):
-    return crud.create_merchant(db, merchant.dict())
+@router.post("/merchants/", response_model=Merchant)
+def create_merchant(merchant: MerchantCreate, session: SessionDep):
+    return crud.create_merchant(session, merchant.dict())
 
 
-@router.get("/merchants/", response_model=list[schemas.Merchant])
-def read_merchants(skip: int = 0, limit: int = 10, db: Session = Depends(get_session)):
-    return crud.get_merchants(db, skip=skip, limit=limit)
+@router.get("/merchants/", response_model=list[Merchant])
+def read_merchants(session: SessionDep, skip: int = 0, limit: int = 10):
+    merchants = crud.get_merchants(session, skip=skip, limit=limit)
+    return [merchant[0] for merchant in merchants]

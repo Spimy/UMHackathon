@@ -1,14 +1,15 @@
-from sqlmodel import Session
+from sqlmodel import select
 from models.item import Item
+from models import SessionDep
 
 
-def create_item(db: Session, item_data: dict):
+def create_item(session: SessionDep, item_data: dict):
     db_item = Item(**item_data)
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
+    session.add(db_item)
+    session.commit()
+    session.refresh(db_item)
     return db_item
 
 
-def get_items(db: Session, skip: int = 0, limit: int = 10):
-    return db.exec(Item).offset(skip).limit(limit).all()
+def get_items(session: SessionDep, skip: int = 0, limit: int = 10):
+    return session.execute(select(Item).offset(skip).limit(limit)).all()

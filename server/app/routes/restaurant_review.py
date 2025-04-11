@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Depends
-from sqlmodel import Session
+from fastapi import APIRouter
 import crud
-import schemas
-from models import get_session
+from schemas import RestaurantReview, RestaurantReviewCreate
+from models import SessionDep
 
 router = APIRouter(tags=["restaurant_reviews"])
 
 
-@router.post("/reviews/", response_model=schemas.RestaurantReview)
-def create_review(review: schemas.RestaurantReviewCreate, db: Session = Depends(get_session)):
-    return crud.create_review(db, review.dict())
+@router.post("/reviews/", response_model=RestaurantReview)
+def create_review(review: RestaurantReviewCreate, session: SessionDep):
+    return crud.create_review(session, review.dict())
 
 
-@router.get("/reviews/", response_model=list[schemas.RestaurantReview])
-def read_reviews(skip: int = 0, limit: int = 10, db: Session = Depends(get_session)):
-    return crud.get_reviews(db, skip=skip, limit=limit)
+@router.get("/reviews/", response_model=list[RestaurantReview])
+def read_reviews(session: SessionDep, skip: int = 0, limit: int = 10):
+    reviews = crud.get_reviews(session, skip=skip, limit=limit)
+    return [review[0] for review in reviews]
