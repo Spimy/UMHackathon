@@ -73,65 +73,13 @@
 		colors: ['#000000', '#92BFFF', '#96E2D6', '#AEC7ED']
 	};
 
-	const marketingChartOptions: ApexOptions = {
-		chart: {
-			type: 'bar',
-			foreColor: '#fefefe',
-			height: '100%'
-		},
-		plotOptions: {
-			bar: {
-				distributed: true
-			}
-		},
-		series: [
-			{
-				name: 'Month',
-				data: [18000, 30000, 20000, 32000, 12000, 24000, 18000, 30000, 20000, 32000, 12000, 24000]
-			}
-		],
-		xaxis: {
-			categories: [
-				'Jan',
-				'Feb',
-				'Mar',
-				'Apr',
-				'May',
-				'Jun',
-				'Jul',
-				'Aug',
-				'Sep',
-				'Oct',
-				'Nov',
-				'Dec'
-			]
-		},
-		yaxis: {
-			labels: {
-				formatter: numFormat
-			}
-		},
-		dataLabels: {
-			enabled: false
-		},
-		legend: {
-			show: false
-		},
-		tooltip: {
-			theme: 'dark'
-		},
-		colors: ['#9F9FF8', '#FEFEFE', '#96E2D6', '#92BFFF', '#AEC7ED', '#000000']
-	};
-
 	let merchantChart: HTMLDivElement | null = $state(null);
 	let trafficChart: HTMLDivElement | null = $state(null);
-	let marketingChart: HTMLDivElement | null = $state(null);
 
 	onMount(() => {
 		import('apexcharts').then((ApexCharts) => {
 			new ApexCharts.default(merchantChart, merchartChartOptions).render();
 			new ApexCharts.default(trafficChart, trafficChartOptions).render();
-			new ApexCharts.default(marketingChart, marketingChartOptions).render();
 		});
 	});
 
@@ -259,10 +207,51 @@
 		<div class="col-span-full" bind:this={trafficChart}></div>
 	</div>
 
-	<!-- Marketing -->
+	<!-- Competitor Analysis -->
 	<div class="bg-primary col-span-full row-span-1 max-h-96 rounded-xl p-4 text-white shadow">
-		<h2 class="text-lgsemi mb-5">Marketing and SEO</h2>
-		<div class="col-span-full" bind:this={marketingChart}></div>
+		<h2 class="text-lgsemi mb-5">Competitor Analysis</h2>
+		<div class="col-span-full flex flex-row">
+
+			<!-- Competitor 1 -->
+			<div class="flex-1 flex flex-col">
+				<div class="flex flex-1 justify-start items-center">
+					<img
+					src="http://static.spimy.dev/logos/character.png"
+					alt="You"
+					class="h-8 w-8 rounded-full"
+				/>
+				<span class="text-md"> Restaurant 1</span>
+			</div>
+			<div class="m-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae aliquam quisquam doloremque deleniti commodi illum autem saepe voluptatem! Ipsum ullam maxime cumque consequatur, sequi minima natus deleniti mollitia ducimus nemo sint incidunt odit quibusdam, repellat quae magnam iusto porro? Odit nihil quasi ex explicabo deserunt nobis exercitationem expedita omnis illum!</div>
+			</div>
+			
+			<!-- Competitor 2 -->
+			<div class="flex-1 flex flex-col">
+				<div class="flex flex-1 justify-start items-center">
+					<img
+					src="http://static.spimy.dev/logos/character.png"
+					alt="You"
+					class="h-8 w-8 rounded-full"
+				/>
+				<span class="text-md"> Restaurant 2</span>
+			</div>
+			<div class="m-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae aliquam quisquam doloremque deleniti commodi illum autem saepe voluptatem! Ipsum ullam maxime cumque consequatur, sequi minima natus deleniti mollitia ducimus nemo sint incidunt odit quibusdam, repellat quae magnam iusto porro? Odit nihil quasi ex explicabo deserunt nobis exercitationem expedita omnis illum!</div>
+			</div>
+
+			<!-- Competitor 3 -->
+			<div class="flex-1 flex flex-col">
+				<div class="flex flex-1 justify-start items-center">
+					<img
+					src="http://static.spimy.dev/logos/character.png"
+					alt="You"
+					class="h-8 w-8 rounded-full"
+				/>
+				<span class="text-md"> Restaurant 3</span>
+			</div>
+			<div class="m-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae aliquam quisquam doloremque deleniti commodi illum autem saepe voluptatem! Ipsum ullam maxime cumque consequatur, sequi minima natus deleniti mollitia ducimus nemo sint incidunt odit quibusdam, repellat quae magnam iusto porro? Odit nihil quasi ex explicabo deserunt nobis exercitationem expedita omnis illum!</div>
+			</div>
+
+		</div>
 	</div>
 </main>
 
