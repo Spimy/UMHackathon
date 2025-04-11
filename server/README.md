@@ -47,7 +47,14 @@ pip install -r requirements.txt
 
 ## Running the Server
 
-To run the server, use:
+1. You will need Docker to start the database:
+
+```bash
+docker compose up -d
+# and wait a bit until the postgres container has fully started 
+```
+
+2. To run the server, use:
 
 ```bash
 python main.py
