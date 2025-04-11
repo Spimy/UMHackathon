@@ -1,5 +1,5 @@
 from sqlmodel import Session
-from app.models.merchant import Merchant
+from models.merchant import Merchant
 
 
 def create_merchant(db: Session, merchant_data: dict):

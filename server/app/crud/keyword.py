@@ -1,5 +1,5 @@
 from sqlmodel import Session
-from app.models.keyword import Keyword
+from models.keyword import Keyword
 
 
 def create_keyword(db: Session, keyword_data: dict):
