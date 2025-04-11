@@ -15,6 +15,8 @@
 		name: string;
 	}
 
+	let { data } = $props();
+
 	let msg = $state('');
 	let messages: Message[] = $state([
 		{ text: 'Hey there! 👋', isSent: false, image: null },
@@ -205,11 +207,7 @@
 						<div class="flex {message.isSent ? 'justify-end' : 'justify-start'} items-start gap-2">
 							{#if !message.isSent}
 								<!-- Profile picture for the chatbot-->
-								<img
-									src="http://static.spimy.dev/logos/character.png"
-									alt="Other Party"
-									class="h-8 w-8 rounded-full"
-								/>
+								<img src="/icons/bot.svg" alt="Other Party" class="h-8 w-8 rounded-lg" />
 							{/if}
 							<div
 								class="prose bg-tertiary/[0.6] text-secondary max-w-[70%] rounded-lg p-3 shadow-sm"
@@ -227,9 +225,10 @@
 							{#if message.isSent}
 								<!-- Profile picture for the user -->
 								<img
-									src="http://static.spimy.dev/logos/character.png"
+									src={data.session?.user?.image ||
+										`https://ui-avatars.com/api/?name=${data.user?.merchant.merchant_name}`}
 									alt="You"
-									class="h-8 w-8 rounded-full"
+									class="h-8 w-8 rounded-lg"
 								/>
 							{/if}
 						</div>
@@ -238,11 +237,7 @@
 					{#if isStreaming}
 						<div class="flex items-start justify-start gap-2">
 							<!-- Profile picture for the chatbot -->
-							<img
-								src="http://static.spimy.dev/logos/character.png"
-								alt="Chatbot"
-								class="h-8 w-8 rounded-full"
-							/>
+							<img src="/icons/bot.svg" alt="Chatbot" class="h-8 w-8 rounded-lg" />
 							<div
 								class="prose text-secondary bg-tertiary/[0.6] max-w-[70%] rounded-lg p-3 shadow-sm"
 							>
