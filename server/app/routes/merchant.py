@@ -1,6 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import crud
-from schemas import Merchant, MerchantCreate
+from schemas import Merchant, MerchantCreate, User
 from models import SessionDep
 
 router = APIRouter(tags=["merchants"])
@@ -15,3 +15,20 @@ def create_merchant(merchant: MerchantCreate, session: SessionDep):
 def read_merchants(session: SessionDep, skip: int = 0, limit: int = 10):
     merchants = crud.get_merchants(session, skip=skip, limit=limit)
     return [merchant[0] for merchant in merchants]
+
+
+@router.get('/user/', response_model=User)
+def read_merchant(email: str, session: SessionDep):
+    user = crud.get_user(session, email)
+    print(f"spimy-test: {user}")
+
+    if user is not None:
+        user = user.tuple()[0]
+        return {
+            'id': user.id,
+            'user_email': user.user_email,
+            'merchant_id': user.merchant_id,
+            'merchant': user.merchant
+        }
+
+    raise HTTPException(status_code=404, detail="User not found")
