@@ -3,6 +3,8 @@ from pydantic import BaseModel
 class TransactionBase(BaseModel):
     item_id: str
     merchant_id: str
+    order_time:str
+    order_value: float
 
 class TransactionCreate(TransactionBase):
     pass
