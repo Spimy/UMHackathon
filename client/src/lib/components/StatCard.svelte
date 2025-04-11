@@ -1,5 +1,10 @@
 <script module lang="ts">
-	export const colours = ['primary', 'bento-purple', 'bento-dark', 'bento-light-blue'] as const;
+	export const colours = [
+		'bg-primary',
+		'bg-bento-purple',
+		'bg-bento-dark',
+		'bg-bento-light-blue'
+	] as const;
 	export type Colour = (typeof colours)[number];
 </script>
 
@@ -17,7 +22,7 @@
 	const isPositive = percentage.startsWith('+');
 </script>
 
-<div class="bg-{colour} text-tertiary flex flex-col space-y-2 rounded-lg shadow-md">
+<div class="{colour} text-tertiary flex flex-col space-y-2 rounded-lg shadow-md">
 	<div class="grid gap-2 p-4 pb-0">
 		<!-- Title -->
 		<h2 class="text-mdsemi">{title}</h2>
