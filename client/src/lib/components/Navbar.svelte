@@ -9,9 +9,10 @@
 
 	interface Props {
 		brandingIconUrl: string;
+		merchantName: string;
 	}
 
-	let { brandingIconUrl }: Props = $props();
+	let { brandingIconUrl, merchantName }: Props = $props();
 
 	// Array of navigation items
 	const navItems: NavItem[] = [
@@ -29,7 +30,7 @@
 		<!-- Branding -->
 		<a href="/overview" class="flex flex-col items-center space-y-2">
 			<img src={brandingIconUrl} alt="Brand Logo" class="h-16 w-16 object-contain" />
-			<span class="text-mdsemi drop-shadow-lg">Burger Factory</span>
+			<span class="text-mdsemi drop-shadow-lg">{merchantName}</span>
 		</a>
 
 		<!-- Navigation Items -->
