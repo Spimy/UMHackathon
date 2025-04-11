@@ -1,12 +1,3 @@
-# USAGE:
-# python scan.py (--images <IMG_DIR> | --image <IMG_PATH>) [-i]
-# For example, to scan a single image with interactive mode:
-# python scan.py --image sample_images/desk.JPG -i
-# To scan all images in a directory automatically:
-# python scan.py --images sample_images
-
-# Scanned images will be output to directory named 'output'
-
 import cv2  # Replace pyimagesearch imports with OpenCV functions
 import numpy as np
 from scipy.spatial import distance as dist
