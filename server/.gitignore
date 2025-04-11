@@ -21,3 +21,4 @@ venv.bak/
 
 postgres_data/
 app/_dataset/
+uploads/
