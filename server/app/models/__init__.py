@@ -77,6 +77,22 @@ def populate_database():
                 )
                 session.add(review)
 
+        # ! Hard coded to associate an email with a merchant
+        if session.execute(select(User)).first() is None:
+            users = {
+                'williamlaw.3001@gmail.com': '7d4e1',
+                'justinyww@gmail.com': '7f2c1',
+                'alexcheekh@gmail.com': '6a0c3',
+                'jb.brubusiness3@gmail.com': '5c1f8'
+            }
+
+            for email, merchant_id in users.items():
+                user = User(
+                    user_email=email,
+                    merchant_id=merchant_id
+                )
+                session.add(user)
+
         # Commit all changes
         session.commit()
 
