@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
-from app import crud, schemas
-from app.dependencies import get_db
+import crud
+import schemas
+from models import get_db
 
 router = APIRouter()
+
 
 @router.post("/reviews/", response_model=schemas.RestaurantReview)
 def create_review(review: schemas.RestaurantReviewCreate, db: Session = Depends(get_db)):
     return crud.create_review(db, review.dict())
+
 
 @router.get("/reviews/", response_model=list[schemas.RestaurantReview])
 def read_reviews(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
