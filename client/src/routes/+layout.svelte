@@ -10,7 +10,8 @@
 	{#if page.data.session}
 		<Navbar
 			merchantName={data.user?.merchant.merchant_name || 'Merchant'}
-			brandingIconUrl="https://static.spimy.dev/logos/character.png"
+			brandingIconUrl={data.session?.user?.image ||
+				`https://ui-avatars.com/api/?name=${data.user?.merchant.merchant_name}`}
 		/>
 	{/if}
 
