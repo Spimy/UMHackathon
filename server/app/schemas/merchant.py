@@ -12,7 +12,7 @@ class MerchantCreate(MerchantBase):
 
 
 class Merchant(MerchantBase):
-    merchant_id: int
+    merchant_id: str
 
     class Config:
         orm_mode = True
