@@ -1,8 +1,7 @@
+from typing import Generator
 from sqlalchemy.orm import sessionmaker, Session
-from models import item, merchant, restaurant_review, keyword
 from sqlmodel import SQLModel, create_engine
 from sqlalchemy.orm import sessionmaker
-from models import item, merchant, restaurant_review, keyword
 
 DATABASE_URL = "postgresql://devuser:devpassword@localhost:5432/umhackathon"
 
@@ -22,7 +21,7 @@ def create_db():
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def get_db() -> Session:
+def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db
