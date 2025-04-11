@@ -90,8 +90,6 @@
 		messages = [...messages, userMessage];
 		msg = '';
 
-		// Clear the selected image and preview after adding to messages
-		selectedImage = null;
 		imagePreview = null;
 
 		isStreaming = true;
@@ -101,14 +99,25 @@
 		resizeTextarea(); // Reset textarea height
 
 		try {
-			// Send the text message to the existing endpoint
-			const response = await fetch(`${PUBLIC_API_URL}/ollama/generate`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ prompt: userMessage.text })
-			});
+			let response;
+
+			if (selectedImage) {
+				const formData = new FormData();
+				formData.append('image', selectedImage);
+
+				response = await fetch(`${PUBLIC_API_URL}/ocr/generate`, {
+					method: 'POST',
+					body: formData
+				});
+			} else {
+				response = await fetch(`${PUBLIC_API_URL}/ollama/generate`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ prompt: userMessage.text })
+				});
+			}
 
 			const reader = response.body?.getReader();
 			if (!reader) throw new Error('No reader available');
@@ -119,7 +128,13 @@
 
 				// Convert the chunk to text and append it
 				const chunk = new TextDecoder().decode(value);
-				currentStreamingMessage = chunk;
+
+				if (selectedImage) {
+					currentStreamingMessage += chunk;
+				} else {
+					currentStreamingMessage = chunk;
+				}
+
 				markdownStreamingMessage = await marked.parse(currentStreamingMessage);
 
 				// Scroll to the bottom during streaming if auto-scroll is enabled
@@ -140,6 +155,7 @@
 			];
 		} finally {
 			isStreaming = false;
+			selectedImage = null;
 		}
 	};
 
