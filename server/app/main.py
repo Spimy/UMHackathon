@@ -1,9 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from routes import ollama, item, merchant, keyword, review, ocr
 from models import create_db_and_tables, populate_database
 import uvicorn
+import os
+import pathlib
+
+# Create uploads directory before app initialization
+UPLOADS_DIR = pathlib.Path(__file__).parent.parent / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
 
 
 @asynccontextmanager
@@ -16,6 +23,9 @@ app = FastAPI(
     title="FastAPI Server", description="A basic FastAPI server", version="1.0.0",
     lifespan=lifespan
 )
+
+# Mount the uploads directory using absolute path
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.include_router(ollama.router)
 app.include_router(item.router)

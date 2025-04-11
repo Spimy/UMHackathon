@@ -1,4 +1,8 @@
 import base64
+import os
+import pathlib
+import time
+import uuid
 from google import genai
 from google.genai import types
 from fastapi import APIRouter, UploadFile
@@ -7,9 +11,36 @@ from settings import GEMINI_API_KEY
 
 router = APIRouter(tags=["OCR"])
 
+# Get the absolute path to the uploads directory
+UPLOADS_DIR = pathlib.Path(__file__).parent.parent.parent / "uploads"
+
+
+def generate_unique_filename(original_filename: str) -> str:
+    """Generate a unique filename by adding timestamp and UUID if needed."""
+    # Get the file extension
+    name, ext = os.path.splitext(original_filename)
+
+    # Generate unique filename with timestamp and UUID
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    unique_id = str(uuid.uuid4())[:8]
+    new_filename = f"{name}_{timestamp}_{unique_id}{ext}"
+
+    return new_filename
+
 
 @router.post("/ocr/generate")
 def generate(image: UploadFile) -> StreamingResponse:
+    # Generate a unique filename
+    unique_filename = generate_unique_filename(image.filename)
+    file_path = UPLOADS_DIR / unique_filename
+
+    # Save the uploaded file using absolute path
+    with open(file_path, "wb") as f:
+        f.write(image.file.read())
+
+    # Reset file pointer to beginning for OCR processing
+    image.file.seek(0)
+
     client = genai.Client(
         api_key=GEMINI_API_KEY,
     )
@@ -23,7 +54,7 @@ def generate(image: UploadFile) -> StreamingResponse:
             role="user",
             parts=[
                 types.Part.from_bytes(
-                    mime_type="""image/jpeg""",
+                    mime_type=image.content_type,
                     data=base64.b64decode(encoded_string),
                 ),
                 types.Part.from_text(
@@ -57,7 +88,8 @@ def generate(image: UploadFile) -> StreamingResponse:
                     ```
                     
                     Task: Reformat the extracted text into consistent paragraphs as shown in the example above. Ensure that lines within the same paragraph are merged into one block, and blank lines between paragraphs are preserved.
-                    """),
+                    """,
+                ),
             ],
         )
     ]
