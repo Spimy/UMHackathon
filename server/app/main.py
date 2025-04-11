@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from routes import ollama, item, merchant, restaurant_review, keyword
+from routes import ollama, item, merchant, keyword, review, ocr
 from models import create_db_and_tables, populate_database
 import uvicorn
 
@@ -20,8 +20,9 @@ app = FastAPI(
 app.include_router(ollama.router)
 app.include_router(item.router)
 app.include_router(merchant.router)
-app.include_router(restaurant_review.router)
+app.include_router(review.router)
 app.include_router(keyword.router)
+app.include_router(ocr.router)
 
 # Configure CORS
 app.add_middleware(

@@ -1,4 +1,4 @@
 from .item import ItemCreate, Item
 from .merchant import MerchantCreate, Merchant
-from .restaurant_review import RestaurantReviewCreate, RestaurantReview
+from .review import ReviewCreate, Review
 from .keyword import KeywordCreate, Keyword

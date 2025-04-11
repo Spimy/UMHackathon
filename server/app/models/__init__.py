@@ -8,7 +8,7 @@ from pathlib import Path
 from .merchant import Merchant
 from .keyword import Keyword
 from .item import Item
-from .restaurant_review import RestaurantReview
+from .review import Review
 
 DATABASE_URL = "postgresql://devuser:devpassword@localhost:5432/umhackathon"
 
@@ -65,6 +65,17 @@ def populate_database():
                     merchant_id=row['merchant_id']
                 )
                 session.add(item)
+
+        # Check and populate reviews
+        if session.execute(select(Review)).first() is None:
+            reviews_df = pd.read_csv(dataset_path / "reviews.csv")
+            for _, row in reviews_df.iterrows():
+                review = Review(
+                    merchant_id=row['merchant_id'],
+                    rating=row['rating'],
+                    review=row['review']
+                )
+                session.add(review)
 
         # Commit all changes
         session.commit()
