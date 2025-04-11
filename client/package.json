@@ -22,6 +22,7 @@
 		"@tailwindcss/forms": "^0.5.9",
 		"@tailwindcss/typography": "^0.5.15",
 		"@tailwindcss/vite": "^4.0.0",
+		"@types/sanitize-html": "^2.15.0",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-svelte": "^3.0.0",
@@ -45,7 +46,9 @@
 	"dependencies": {
 		"@auth/core": "^0.38.0",
 		"@auth/sveltekit": "^1.8.0",
-		"chart.js": "^4.4.8"
+		"apexcharts": "^4.5.0",
+		"marked": "^15.0.8",
+		"sanitize-html": "^2.15.0"
 	},
 	"packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
 }
