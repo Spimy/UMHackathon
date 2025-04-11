@@ -3,7 +3,7 @@ from google import genai
 from google.genai import types
 import os
 import dotenv
-from scan import DocScanner
+from utils.scan import DocScanner
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
