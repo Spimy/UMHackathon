@@ -5,11 +5,10 @@ from sqlmodel import SQLModel, create_engine, select
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from pathlib import Path
-from .merchant import Merchant
+from .merchant import Merchant, User
 from .keyword import Keyword
 from .item import Item
 from .review import Review
-from .user import User
 from settings import DATABASE_URI
 
 # Create a connection engine to the database
