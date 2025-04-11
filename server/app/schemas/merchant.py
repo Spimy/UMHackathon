@@ -16,3 +16,16 @@ class Merchant(MerchantBase):
 
     class Config:
         orm_mode = True
+
+
+class UserBase(BaseModel):
+    user_email: str
+    merchant_id: str
+
+
+class User(UserBase):
+    id: int
+    merchant: Merchant
+
+    class Config:
+        orm_mode = True
