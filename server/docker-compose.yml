@@ -1,0 +1,15 @@
+version: '3.8'
+name: UMHackathon
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: dev-postgres
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: umhackathon
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
