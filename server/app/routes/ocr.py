@@ -2,7 +2,7 @@ import base64
 from google import genai
 from google.genai import types
 from utils.scan import DocScanner
-from fastapi import APIRouter
+from fastapi import APIRouter, UploadFile
 from fastapi.responses import StreamingResponse
 from settings import GEMINI_API_KEY
 
@@ -10,13 +10,13 @@ router = APIRouter(tags=["OCR"])
 
 
 @router.post("/OCR/generate")
-def generate(image: str = "input") -> StreamingResponse:
+def generate(image: UploadFile) -> StreamingResponse:
     client = genai.Client(
         api_key=GEMINI_API_KEY,
     )
 
-    scanner = DocScanner()
-    encoded_string = scanner.scan("../../../shared/images/{image}.jpg")
+    encoded_bytes = base64.b64encode(image.file.read())
+    encoded_string = encoded_bytes.decode('utf-8')
 
     model = "gemini-2.0-flash"
     contents = [
@@ -72,6 +72,6 @@ def generate(image: str = "input") -> StreamingResponse:
             contents=contents,
             config=generate_content_config,
         ):
-            yield chunk.content.parts[0].text
+            yield chunk.text
 
     return StreamingResponse(generate_stream(), media_type="text/plain")
