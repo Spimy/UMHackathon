@@ -37,7 +37,43 @@ The data used in this project can be found [here](https://drive.google.com/drive
 Some of the data were provided by the hosts of UMHackathon, while some were generated using AI.
 
 ## Personalization Strategies
+1. **Customer Feedback Personalization** <br/>
 
+   Strategy: Analyze recurring themes in reviews to segment customers by satisfaction level, preferences, and complaints.
+
+   Action: Automatically customize promotions or responses (e.g., vouchers for those who complain about packaging or delays).
+
+   Outcome: Builds customer trust and shows responsiveness to feedback.
+
+3. **Dynamic Offer Personalization** <br/>
+  
+   Strategy: Identify best-selling and underperforming items by customer segment and time of day/week.
+
+   Action: Personalize homepage layouts, upsell combos, or push notifications based on trending products for each user.
+
+   Outcome: Boosts sales through timely, relevant product placements.
+
+4. **Smart Bundle Customization** <br/>
+
+   Strategy: Use product list insights to tailor bundle deals based on frequently purchased items.
+
+   Action: Offer auto-generated bundles (e.g., “Your usual lunchtime combo”) or recommend missing items in a customer's cart.
+
+   Outcome: Increases basket size and inventory turnover.
+
+6. **Purchase History Personalization** <br/>
+
+   Strategy: Convert past receipts into customer profiles (e.g., frequency, spend level, product categories).
+
+   Action: Enable merchants to offer loyalty perks (e.g., “5th order discount”) or tailored re-order suggestions.
+
+   Outcome: Encourages repeat orders and builds long-term loyalty.
+
+8. **Multilingual Support** <br/>
+
+   Strategy: Automatically localize communication (promotions, review replies, chat support) to the customer’s preferred language.
+
+   Outcome: Improves accessibility and engagement for diverse customer bases.
 
 
 ## Solution Architecture
