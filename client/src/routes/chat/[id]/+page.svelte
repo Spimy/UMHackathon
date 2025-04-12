@@ -448,7 +448,7 @@
 	</label>
 	<!-- Hidden checkbox for toggling the aside -->
 	<input type="checkbox" id="toggle-aside" class="peer hidden" />
-	<aside class="bg-primary w-1/4 p-4 peer-checked:hidden">
+	<aside class="bg-primary h-screen w-1/4 overflow-y-auto p-4 peer-checked:hidden">
 		<!-- Add content for the aside section here -->
 		<h2 class="text-lg font-bold text-white">Chats</h2>
 		<p class="text-white">All your chats in one place</p>
