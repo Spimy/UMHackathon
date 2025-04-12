@@ -21,16 +21,16 @@ convo_history = []
 
 available_APIs = [
     {
-        "function": "get_all_items",
-        "description": "Retrieve all items from the database.",
-        "arguments": {}
+        "function": "get_merchant_transactions_summary",
+        "description": "Retrieve a summary of transactions for a specific merchant, including frequency and total value of items sold.",
+        "arguments": {"session": "SessionDep", "merchant_id": "str"}
+    },
+    {
+        "function": "read_items_by_merchant",
+        "description": "Retrieve items associated with a specific merchant.",
+        "arguments": {"merchant_id": "str", "session": "SessionDep"}
     }
 ]
-
-
-class Prompt(BaseModel):
-    prompt: str
-
 
 class Item(BaseModel):
     '''Define Result Model'''
@@ -45,19 +45,19 @@ ollama_model = OpenAIModel(
 )
 
 
-async def generate_stream(agent, prompt: Prompt):
-    async with agent.run_stream(prompt.prompt) as result:
+async def generate_stream(agent, prompt: str):
+    async with agent.run_stream(prompt) as result:
         async for text in result.stream(debounce_by=0.01):
             yield text.strip()
 
     convo_history.append({"user": prompt, "bot": result})
 
 
-async def translate_prompt(prompt: Prompt, target_language='en'):
+async def translate_prompt(prompt: str, target_language='en') -> str:
     url = "https://translate.spimy.dev/translate"
     headers = {"Content-Type": "application/json"}
     data = {
-        "q": f"{prompt.prompt}",
+        "q": f"{prompt}",
         "source": "auto",
         "target": f"{target_language}",
         "format": "text",
@@ -67,33 +67,33 @@ async def translate_prompt(prompt: Prompt, target_language='en'):
         try:
             response = await client.post(url, json=data, headers=headers)
             response_json = response.json()
-            prompt.prompt = response_json.get("translatedText", "")
+            prompt = response_json.get("translatedText", "")
         except httpx.RequestError as e:
             print(f"Translation failed: {e}")
 
     return prompt
 
 
-async def search_or_not(prompt: Prompt, context: str):
+async def search_or_not(prompt: str, context: str):
     category_agent = Agent(
         model=ollama_model,
         system_prompt=(
             'You are not an AI assistant. Your only task is to decide if an API call is needed and if any of the APIs that are available is suitable to obtain additional information to answer the users prompt,' +
             'or to just act as a normal chatbot for normal conversation.' +
             'If you do not know an answer to a question, do not make things up! that means an API call is needed.' +
-            'Respond with "1" if it is an inquiry/plotting a graph about inventory ' +
-            'Respond with "2" if it is an inquiry about competitors '
+            'Respond with "1" if it is an inquiry about items ' +
+            'Respond with "2" if it is an inquiry about plotting transactions '
             'Respond with "0" otherwise' +
-            'Example: User : "Hello" Mistral: "{ "category": 0, "reasoning":"it is just a common greeting."  }" ' +
-            'User : "Do you sell any ice cream?" Mistral: "{"category": 1, "reasoning":"Get_Items needs to be called" }" ' +
-            'Respond in json format.' +
+            'Example: User : "Hello" Mistral: { "category": 0, "reasoning":"it is just a common greeting."  } ' +
+            'User : "Do you sell any ice cream?" Mistral: {"category": 1, "reasoning":"Get_Items needs to be called" } ' +
+            'Make sure to respond in json format.' +
             f'\nThe available APIs are: {available_APIs}'
         ),
         deps_type=None,
         result_type=str,
     )
 
-    result = await category_agent.run(prompt.prompt)
+    result = await category_agent.run(prompt)
     result = json.loads(result.data)
     print("category: " + str(result["category"]
                              ) + " reasoning: " + result["reasoning"])
@@ -146,36 +146,40 @@ chatbot_agent = Agent(
     result_type=str,
 )
 
-inventory_agent = Agent(
+item_agent = Agent(
     model=ollama_model,
     name="Inventory_Agent",
     system_prompt=(
-        "You are an AI agent that can call tools to help answer a store owner's questions about his inventory.\n"
+        "You are an AI agent that can call tools to help answer a store owner's questions.\n"
         "You HAVE access to some APIs, you MUST use the tools directly first and use its result to respond.\n"
-        "You are not to generate speculative or irrelevant content, additional commentary, explanations, questions or off-topic facts.\n"
-        "Do not provide any information that is not based on the tools available, and do not mention what you are going to do.\n"
-        "If you user asks you to plot a graph, you MUST get the data from the API first and then generate the data points in JSON,\n"
+        "You are not to generate speculative or irrelevant content, additional commentary, explanations, questions or off-topic facts. \n"
         "For example:\n"
-        "user: 'What are the items currently available', Mistral: '{\"items\": [{\"name\": \"Item A\", \"quantity\": 10}, {\"name\": \"Item B\", \"quantity\": 5}]}, placeholder information must be replaced with REAL information'\n"
-        "user: 'Do we still have any more X?', Mistral: '{\"item\": \"X\", \"available\": false}'\n"
-        "user: 'Plot a graph of my inventory' Mistral: '{\"graph\": {\"type\": \"pie\", \"data\": [{\"name\": \"Item A\", \"quantity\": 10}, {\"name\": \"Item B\", \"quantity\": 5}]}}'\n"
-        "If you do not have any information to generate from the tools, simply reply '{\"error\": \"I am unable to provide that information\"}'.\n"
-        "DO NOT ever provide placeholder text or invent information. ONLY provide factual results based on the tools available.\n"
+        "user: 'What are the items currently available', Mistral: 'Here are the items currently available: Item A, Item B, ...'\n"
+        "user: 'Do we still have any more X?', Mistral: 'It seems that we do not have any more X left.'\n"
+        "DO NOT use hypothetical data or mention any hypothetical functions. ONLY provide factual results based on the tools available.\n"
     ),
     deps_type=None,
     result_type=str,
 )
 
-
-@inventory_agent.tool
+@item_agent.tool
 async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
-    url = f'{FASTAPI_URL}/items'
+    url = f'{FASTAPI_URL}/merchants/2e8a5/items'
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
 
     if response.status_code == 200:
         items_data = response.json()
-        return [Item(**item) for item in items_data]
+        transformed_items = [
+            Item(
+                name=item.get("item_name"),
+                description=item.get("cuisine_tag", "No description available"),
+                price=item.get("item_price")
+            )
+            for item in items_data
+        ]
+        print(transformed_items)
+        return transformed_items
     else:
         return 'Failed to fetch items from API'
 
@@ -193,14 +197,33 @@ review_agent = Agent(
 
 
 @router.post("/ollama/generate")
-async def generate(prompt: Prompt, context="These are the previous prompts and responses: " + str(convo_history)) -> StreamingResponse:
+async def generate(userMessage: dict, context="These are the previous prompts and responses: ") -> StreamingResponse:
     global convo_history
 
+
+    prompt = userMessage["prompt"].replace("<p>", "").replace("</p>", "")
+
     prompt = await translate_prompt(prompt)
+    print("prompt after translation:" + prompt)
 
     prompt_category = await search_or_not(prompt, context)
-    if prompt_category == 1:
-        return StreamingResponse(generate_stream(inventory_agent, prompt), media_type="text/event-stream")
+    
+    print("Prompt category: ", prompt_category)
+
+    # Check if prompt_category is already an integer
+    if isinstance(prompt_category, int):
+        category = prompt_category
+    else:
+        # Convert the string to JSON
+        prompt_category_json = json.loads(
+            prompt_category.replace("category:", '"category":').replace("reasoning:", '"reasoning":').replace("'", '"')
+        )
+        # Extract the category number
+        category = int(prompt_category_json["category"])
+
+    if category == 1: 
+
+        return StreamingResponse(generate_stream(item_agent, prompt), media_type="text/event-stream")
     else:
         return StreamingResponse(generate_stream(chatbot_agent, prompt), media_type="text/event-stream")
     

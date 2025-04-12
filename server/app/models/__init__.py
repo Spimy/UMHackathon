@@ -59,6 +59,7 @@ def populate_database():
             items_df = pd.read_csv(dataset_path / "items.csv")
             for _, row in items_df.iterrows():
                 item = Item(
+                    item_id=row['item_id'],
                     cuisine_tag=row['cuisine_tag'],
                     item_name=row['item_name'],
                     item_price=row['item_price'],
