@@ -38,8 +38,6 @@
 	let markdownStreamingMessage = $state('');
 	let selectedImage: File | null = $state(null);
 	let imagePreview: string | null = $state(null);
-	let showThinking = $state(false);
-	let thinkingMessage: HTMLDivElement | null = $state(null);
 
 	const isJsonString = (str: string) => {
 		try {
@@ -87,7 +85,10 @@
 		autoScrollEnabled = true;
 		scrollToBottom();
 	};
-	afterNavigate(() => enableAutoScroll());
+	afterNavigate(() => {
+		enableAutoScroll();
+		messages = data.messages;
+	});
 
 	const saveMessage = async (message: Message) => {
 		await fetch(`${PUBLIC_API_URL}/chat/${data.chatId}/messages`, {
@@ -119,7 +120,6 @@
 		imagePreview = null;
 
 		isStreaming = true;
-		showThinking = true;
 		currentStreamingMessage = '';
 
 		await tick(); // Wait for DOM updates
@@ -200,7 +200,6 @@
 			];
 		} finally {
 			isStreaming = false;
-			showThinking = false;
 			selectedImage = null;
 		}
 	};
@@ -288,7 +287,6 @@
 							<img src="/icons/bot.svg" alt="Chatbot" class="h-8 w-8 rounded-lg" />
 							<div
 								class="prose text-secondary bg-tertiary/[0.6] max-w-[70%] rounded-lg p-3 shadow-sm"
-								bind:this={thinkingMessage}
 							>
 								{#if !markdownStreamingMessage}
 									I am thinking<span class="ml-1 inline-flex gap-1">
