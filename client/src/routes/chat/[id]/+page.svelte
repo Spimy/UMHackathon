@@ -1,7 +1,28 @@
+<script module lang="ts">
+	export interface PlotPoints {
+		item_id: string;
+		item_name: string;
+		frequency: number;
+		total_value: number;
+	}
+
+	export interface PlotPointsResponse {
+		data_point: 'frequency' | 'total_value';
+		data_points: {
+			today: PlotPoints[];
+			this_week: PlotPoints[];
+			this_month: PlotPoints[];
+		};
+		time: 'today' | 'this_week' | 'this_month';
+	}
+</script>
+
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { afterNavigate } from '$app/navigation';
 	import { PUBLIC_API_URL } from '$env/static/public';
+	import PieChart from '$lib/components/PieChart.svelte';
+	import type { ApexOptions } from 'apexcharts';
 	import { marked } from 'marked';
 	import sanitizeHtml from 'sanitize-html';
 	import { tick } from 'svelte';
@@ -19,6 +40,44 @@
 	let selectedImage: File | null = $state(null);
 	let imagePreview: string | null = $state(null);
 	let showThinking = $state(false);
+	let thinkingMessage: HTMLDivElement | null = $state(null);
+
+	const isJsonString = (str: string) => {
+		try {
+			JSON.parse(str);
+		} catch (e) {
+			return false;
+		}
+		return true;
+	};
+
+	const renderChart = async (msg: string, el: HTMLDivElement) => {
+		const res: PlotPointsResponse = JSON.parse(msg);
+
+		import('apexcharts').then((ApexCharts) => {
+			const options: ApexOptions = {
+				chart: {
+					type: 'pie',
+					foreColor: '#fefefe'
+				},
+				series: [
+					{
+						name: res.data_point,
+						data: res.data_points[res.time].map((point) => point[res.data_point])
+					}
+				],
+				dataLabels: {
+					enabled: false
+				},
+				tooltip: {
+					x: {
+						show: true
+					}
+				}
+			};
+			new ApexCharts.default(el, options).render();
+		});
+	};
 
 	const sanitizeOptions: sanitizeHtml.IOptions = {
 		disallowedTagsMode: 'escape'
@@ -118,34 +177,43 @@
 				saveMessage(userMessage);
 			}
 
-			const reader = response.body?.getReader();
-			if (!reader) throw new Error('No reader available');
+			if (response.headers.get('content-type') === 'application/json') {
+				const res: PlotPointsResponse = await response.json();
 
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
+				// Add the complete response to messages
+				const finalMessage = { text: JSON.stringify(res), is_sent: false, image: undefined };
+				messages = [...messages, finalMessage];
+				await saveMessage(finalMessage);
+			} else {
+				const reader = response.body?.getReader();
+				if (!reader) throw new Error('No reader available');
 
-				// Convert the chunk to text and append it
-				const chunk = new TextDecoder().decode(value);
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
 
-				if (selectedImage) {
-					currentStreamingMessage += chunk;
-				} else {
-					currentStreamingMessage = chunk;
+					// Convert the chunk to text and append it
+					const chunk = new TextDecoder().decode(value);
+
+					if (selectedImage) {
+						currentStreamingMessage += chunk;
+					} else {
+						currentStreamingMessage = chunk;
+					}
+
+					markdownStreamingMessage = await marked.parse(currentStreamingMessage);
 				}
-
-				markdownStreamingMessage = await marked.parse(currentStreamingMessage);
 
 				// Scroll to the bottom during streaming if auto-scroll is enabled
 				if (autoScrollEnabled) {
 					scrollToBottom();
 				}
-			}
 
-			// Add the complete response to messages
-			const finalMessage = { text: markdownStreamingMessage, is_sent: false, image: undefined };
-			messages = [...messages, finalMessage];
-			await saveMessage(finalMessage);
+				// Add the complete response to messages
+				const finalMessage = { text: markdownStreamingMessage, is_sent: false, image: undefined };
+				messages = [...messages, finalMessage];
+				await saveMessage(finalMessage);
+			}
 
 			currentStreamingMessage = '';
 			markdownStreamingMessage = '';
@@ -222,7 +290,11 @@
 									/>
 								{/if}
 
-								{@html sanitizeHtml(message.text, sanitizeOptions)}
+								{#if isJsonString(message.text)}
+									<PieChart res={JSON.parse(message.text)} />
+								{:else}
+									{@html sanitizeHtml(message.text, sanitizeOptions)}
+								{/if}
 							</div>
 							{#if message.is_sent}
 								<!-- Profile picture for the user -->
@@ -242,6 +314,7 @@
 							<img src="/icons/bot.svg" alt="Chatbot" class="h-8 w-8 rounded-lg" />
 							<div
 								class="prose text-secondary bg-tertiary/[0.6] max-w-[70%] rounded-lg p-3 shadow-sm"
+								bind:this={thinkingMessage}
 							>
 								{#if !markdownStreamingMessage}
 									I am thinking<span class="ml-1 inline-flex gap-1">

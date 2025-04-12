@@ -225,79 +225,38 @@ transaction_agent = Agent(
     name="Transaction_Agent",
     system_prompt=(
         '''
-        You are a data-driven AI agent that MUST use the GET_transactions API call data.
-
-        CRITICAL RULES:
-        1. You MUST call GET_transactions API for EVERY response
-        2. You MUST use the actual API response data in your response
-        3. You MUST format responses in this JSON structure:
-           {
-               "data_point": "frequency" or "total_value",
-               "data_points": <INSERT THE EXACT API RESPONSE HERE>,
-               "time": "today" or "this_week" or "this_month"
-           }
-
-        Process:
-        1. Call GET_transactions API
-        2. Take the API response and insert it directly into data_points
-        3. Analyze user query to determine data_point type and time period
-        4. Return the JSON with the actual API data
-
-        Examples:
-        If GET_transactions returns {
-            "today": [
-                {
-                "item_id": "string",
-                "frequency": 0,
-                "total_value": 0
-                }
-            ],
-            "this_week": [
-                {
-                "item_id": "string",
-                "frequency": 0,
-                "total_value": 0
-                }
-            ],
-            "this_month": [
-                {
-                "item_id": "string",
-                "frequency": 0,
-                "total_value": 0
-                }
-            ]
-        }, then:
-        
-        User: "Show me today's sales"
-        Response: {
-            "data_point": "frequency",
-            "data_points": {
-                "today": [
-                    {
-                    "item_id": "string",
-                    "frequency": 0,
-                    "total_value": 0
-                    }
-                ],
-                "this_week": [
-                    {
-                    "item_id": "string",
-                    "frequency": 0,
-                    "total_value": 0
-                    }
-                ],
-                "this_month": [
-                    {
-                    "item_id": "string",
-                    "frequency": 0,
-                    "total_value": 0
-                    }
-                ]
-            },
-            "time": "today"
+        You are a categorization agent that MUST ONLY return responses in the following JSON format:
+        {
+            "data_point": "frequency" or "total_value",
+            "time": "today" or "this_week" or "this_month"
         }
 
-        DO NOT modify or generate data - use the exact API response in data_points.
+        CRITICAL RULES:
+        1. For data_point:
+           - Use "frequency" for queries about number of sales, count, quantity, or how many
+           - Use "total_value" for queries about revenue, earnings, money, or sales value
+        
+        2. For time:
+           - Use "today" for queries about today, current day, now
+           - Use "this_week" for queries about this week, weekly, past 7 days
+           - Use "this_month" for queries about this month, monthly, past 30 days
+           - Default to "today" if no time specified
+
+        Examples:
+        User: "How many sales today?"
+        Response: {"data_point": "frequency", "time": "today"}
+
+        User: "Show me this week's revenue"
+        Response: {"data_point": "total_value", "time": "this_week"}
+
+        User: "What's the total earnings this month?"
+        Response: {"data_point": "total_value", "time": "this_month"}
+
+        User: "Show me sales data"
+        Response: {"data_point": "frequency", "time": "today"}
+
+        ALWAYS return valid JSON with exactly these two fields.
+        NEVER add additional fields or explanations.
         '''
     ),
     deps_type=None,
@@ -328,14 +287,13 @@ async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
 
 
 @transaction_agent.tool
-async def GET_transactions(ctx: RunContext[None]) -> str:
-    url = f'{FASTAPI_URL}/transactions/2e8a5/summary'
+async def GET_transactions() -> str:
+    url = f'{FASTAPI_URL}/transactions/5f1d3/summary'
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
 
     if response.status_code == 200:
         data = response.json()
-        print(f"spimy-data: {data}")
         return data
     return {"error": "No data available"}
 
@@ -364,10 +322,15 @@ async def generate(prompt: Prompt, session: SessionDep) -> StreamingResponse:
             content=(await item_agent.run(prompt.prompt)).data
         )
     elif prompt_category == 2:
-        return Response(
-            content=(await transaction_agent.run(prompt.prompt)).data,
-            media_type="application/json"
-        )
+        # First, analyze the query to determine data_point and time period
+        query_analysis = await transaction_agent.run(prompt.prompt)
+        params = json.loads(query_analysis.data)
+
+        # Then get transaction data
+        transactions = crud.get_merchant_transactions_summary(session, "5f1d3")
+        params['data_points'] = transactions
+
+        return params
     else:
         return StreamingResponse(
             generate_stream(chatbot_agent, prompt, session),
