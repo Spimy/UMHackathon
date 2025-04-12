@@ -84,6 +84,16 @@ Some of the data were provided by the hosts of UMHackathon, while some were gene
 
    Outcome: Improves accessibility and engagement for diverse customer bases.
 
+## UI Figma Design
+<a>
+  <img src="https://github.com/user-attachments/assets/51394f15-ee7f-417b-a570-94049c16dcea" alt="Overview" height="300">
+</a>
+<a>
+  <img src="https://github.com/user-attachments/assets/5b61e6cc-7f88-4126-9c30-280c029afd06" alt="Chat" height="300">
+</a> <br/>
+<a href='https://www.figma.com/proto/1NRKS2Fl2SR0sYbWPWOrhZ/UM-Hackathon?page-id=0%3A1&node-id=2506-4757&p=f&viewport=-341%2C-
+  261%2C0.2&t=FepnjYQum9eWRZhD-1&scaling=scale-down&content-scaling=fixed&starting-point-node-id=2506%3A4757'> CLICK ME FOR THE FIGMA DESIGN</a> 
+
 
 ## Solution Architecture
 
