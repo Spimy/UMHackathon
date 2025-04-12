@@ -89,7 +89,7 @@ Some of the data were provided by the hosts of UMHackathon, while some were gene
 
 <div align="center">
   <a>
-    <img src="https://github.com/user-attachments/assets/2de685bd-d8a1-44bf-b7e7-d2fd89709dda" alt="Solution Architecture Diagram" height="500">
+    <img src="https://github.com/user-attachments/assets/2de685bd-d8a1-44bf-b7e7-d2fd89709dda" alt="Solution Architecture Diagram" height="300">
   </a>
 </div>
 
