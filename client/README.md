@@ -6,6 +6,18 @@ The client is built using the following frameworks:
  [Tailwind](https://tailwindcss.com/)
  [TypeScript](https://www.typescriptlang.org/)
 
+## Environment Variables
+
+Before setting up, you will have to create a `.env` file here to store the API keys and other variables
+
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+AUTH_SECRET=
+PUBLIC_API_URL=http://127.0.0.1:8000
+```
+
+
 ## Developing
 
 Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
