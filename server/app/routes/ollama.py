@@ -272,7 +272,6 @@ class MerchantContext(BaseModel):
 @item_agent.tool
 async def GET_items(ctx: RunContext[MerchantContext]) -> Union[str, List[Item]]:
     url = f'{FASTAPI_URL}/merchants/{ctx.deps.merchant_id}/items'
-    print('spimy-url: ' + url)
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
 
@@ -311,7 +310,6 @@ async def generate(prompt: Prompt, session: SessionDep) -> StreamingResponse:
     prompt = await translate_prompt(prompt)
     prompt_category = await search_or_not(prompt)
 
-    print("Prompt category: " + str(prompt_category))
     if prompt_category == 1:
         return Response(
             content=(await item_agent.run(prompt.prompt, deps=MerchantContext(merchant_id=prompt.merchant_id))).data
