@@ -244,6 +244,7 @@
 	const handleImageChange = (event: Event) => {
 		const target = event.target as HTMLInputElement;
 		selectedImage = target.files ? target.files[0] : null;
+		msg = '';
 
 		if (selectedImage) {
 			const reader = new FileReader();
@@ -354,6 +355,7 @@
 							name="message"
 							bind:this={textarea}
 							bind:value={msg}
+							disabled={imagePreview !== null}
 							onkeydown={handleKeyPress}
 							placeholder="How can I help you?"
 							class="bg-highlight text-tertiary placeholder-tertiary/[0.6] focus:border-secondary w-full resize-none rounded-lg border px-4 py-2 pl-12 pr-12 focus:outline-none"
@@ -362,15 +364,14 @@
 						></textarea>
 
 						<!-- Image upload icon -->
-						<label
-							for="image-upload"
-							class="absolute bottom-0 left-3 -translate-y-1/2 cursor-pointer"
-						>
+						<label for="image-upload" class="absolute bottom-0 left-3 -translate-y-1/2">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 24 24"
 								fill="currentColor"
-								class="text-tertiary hover:text-tertiary/[0.6] h-6 w-6"
+								class=" hover:text-tertiary/[0.6] h-6 w-6 {msg !== ''
+									? 'text-tertiary/[0.6] cursor-not-allowed'
+									: 'text-tertiary cursor-pointer'}"
 							>
 								<path
 									fill-rule="evenodd"
@@ -386,6 +387,7 @@
 							type="file"
 							accept="image/*"
 							onchange={handleImageChange}
+							disabled={msg !== ''}
 							class="hidden"
 							id="image-upload"
 						/>
@@ -470,7 +472,7 @@
 						? 'bg-secondary/[0.8]'
 						: ''} bg-secondary/[0.5] hover:bg-secondary/[0.8] cursor-pointer rounded-lg p-3 text-white"
 				>
-					<a href="/chat/{chat.id}" class="flex gap-2">
+					<a href="/chat/{chat.id}" class="flex h-full w-full gap-2">
 						<img src="/icons/message.svg" alt="message icon" />
 						<span class="text-md">{chat.name}</span>
 					</a>
