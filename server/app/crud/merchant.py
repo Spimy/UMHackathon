@@ -1,6 +1,7 @@
 from models.merchant import Merchant, User
 from models import SessionDep
 from sqlmodel import select
+from models.item import Item  # Ensure the Item model is imported
 
 
 def create_merchant(session: SessionDep, merchant_data: dict):
@@ -17,3 +18,7 @@ def get_merchants(session: SessionDep, skip: int = 0, limit: int = 10):
 
 def get_user(session: SessionDep, email: str):
     return session.execute(select(User).where(User.user_email == email)).first()
+
+
+def get_items_by_merchant(session: SessionDep, merchant_id: int):
+    return session.execute(select(Item).where(Item.merchant_id == merchant_id)).all()
