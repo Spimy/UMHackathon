@@ -9,6 +9,7 @@ from .merchant import Merchant, User
 from .keyword import Keyword
 from .item import Item
 from .review import Review
+from .transaction import TransactionData, TransactionItems
 from settings import DATABASE_URI
 
 # Create a connection engine to the database
@@ -58,6 +59,7 @@ def populate_database():
             items_df = pd.read_csv(dataset_path / "items.csv")
             for _, row in items_df.iterrows():
                 item = Item(
+                    item_id=row['item_id'],
                     cuisine_tag=row['cuisine_tag'],
                     item_name=row['item_name'],
                     item_price=row['item_price'],
@@ -75,6 +77,42 @@ def populate_database():
                     review=row['review']
                 )
                 session.add(review)
+                
+                
+        # Check and populate transactionsData
+        if session.execute(select(TransactionData)).first() is None:
+            transactionData_df = pd.read_csv(dataset_path / "transaction_data.csv")
+            for _, row in transactionData_df.iterrows():
+                try:
+                    transactionData = TransactionData(
+                        order_id=row['order_id'],
+                        order_time=row['order_time'],
+                        driver_arrival_time=row['driver_arrival_time'],
+                        driver_pickup_time=row['driver_pickup_time'],
+                        delivery_time=row['delivery_time'],
+                        order_value=row['order_value'],
+                        eater_id=row['eater_id'],
+                        merchant_id=row['merchant_id']
+                    )
+                    session.add(transactionData)
+                except Exception as e:
+                    print(f"Error adding transaction data: {e}")
+                    continue
+                
+        # Check and populate transactionsItems
+        if session.execute(select(TransactionItems)).first() is None:
+            transactionItems_df = pd.read_csv(dataset_path / "transaction_items.csv")
+            for _, row in transactionItems_df.iterrows():
+                try:
+                    transactionItem = TransactionItems(
+                        order_id = row['order_id'],
+                        item_id = row['item_id'],
+                        merchant_id = row['merchant_id']
+                    )
+                    session.add(transactionItem)
+                except Exception as e:
+                    print(f"Error adding transaction data: {e}")
+                    continue
 
         # ! Hard coded to associate an email with a merchant
         if session.execute(select(User)).first() is None:

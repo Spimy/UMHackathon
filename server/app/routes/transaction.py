@@ -1,17 +1,14 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 import crud
-from schemas import Transaction, TransactionCreate
+from schemas import MerchantTransactionSummary
 from models import SessionDep
 
 router = APIRouter(tags=["transactions"])
 
+@router.get("/transactions/{merchant_id}/summary", response_model=MerchantTransactionSummary)
+def get_merchant_summary(
+    merchant_id: str,
+    session: SessionDep
+):
+    return crud.get_merchant_transactions_summary(session, merchant_id)
 
-@router.post("/transactions/", response_model=Transaction)
-def create_transaction(transaction: TransactionCreate, session: SessionDep):
-    return crud.create_transaction(session, transaction.dict())
-
-
-@router.get("/transactions/", response_model=list[Transaction])
-def read_transactions(session: SessionDep, skip: int = 0, limit: int = 10):
-    transactions = crud.get_transaction(session, skip=skip, limit=limit)
-    return [transaction[0] for transaction in transactions]

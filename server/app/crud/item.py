@@ -13,3 +13,4 @@ def create_item(session: SessionDep, item_data: dict):
 
 def get_items(session: SessionDep, skip: int = 0, limit: int = 10):
     return session.execute(select(Item).offset(skip).limit(limit)).all()
+
