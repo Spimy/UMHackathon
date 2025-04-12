@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
 from fastapi.responses import StreamingResponse
 import logging
 from pydantic import BaseModel
@@ -105,23 +105,37 @@ async def search_or_not(prompt: Prompt):
     category_agent = Agent(
         model=ollama_model,
         system_prompt=(
-            'You are not an AI assistant. Your only task is to decide if an API call is needed and if any of the APIs that are available is suitable to obtain additional information to answer the users prompt,' +
-            'or to just act as a normal chatbot for normal conversation.' +
-            'If you do not know an answer to a question, do not make things up! that means an API call is needed.' +
-            'Respond with "1" if it is an inquiry/plotting a graph about inventory ' +
-            'Respond with "2" if it is an inquiry about competitors '
-            'Respond with "0" otherwise' +
-            'Example: User : "Hello" Mistral: "{ "category": 0, "reasoning":"it is just a common greeting."  }" ' +
-            'User : "Do you sell any ice cream?" Mistral: "{"category": 1, "reasoning":"GET_items needs to be called" }" ' +
-            'Respond in json format.' +
-            f'\nThe available APIs are: {available_APIs}'
+            '''You are a categorization agent that MUST ONLY return responses in the following JSON format:
+            {
+                "category": [0, 1, or 2],
+                "reasoning": "explanation for the category choice"
+            }
+
+            RULES:
+            1. You MUST categorize ALL inquiries into one of these categories:
+            - Category 1: Inventory/graph related inquiries (requires GET_items API)
+            - Category 2: Transaction related inquiries
+            - Category 0: General conversation/greetings
+
+            2. You MUST return valid JSON for EVERY response
+            3. You MUST provide reasoning for your category choice
+            4. You MUST check available APIs before categorizing
+
+            Examples of valid responses:
+            User: "Hello"
+            Response: {"category": 0, "reasoning": "General greeting, no API needed"}
+
+            User: "Do you sell ice cream?"
+            Response: {"category": 1, "reasoning": "Inventory inquiry, requires GET_items API call"}
+
+            Remember: ALWAYS return response in valid JSON format with category and reasoning fields.
+            ''' + f"\nAvailable APIs: {available_APIs}"
         ),
         deps_type=None,
         result_type=str,
     )
 
     result = await category_agent.run(prompt.prompt)
-    print("category: " + result.data)
     result = json.loads(result.data)
     print("category: " + str(result["category"]
                              ) + " reasoning: " + result["reasoning"])
@@ -178,13 +192,26 @@ item_agent = Agent(
     model=ollama_model,
     name="Inventory_Agent",
     system_prompt=(
-        "You are an AI agent that can call tools to help answer a store owner's questions.\n"
-        "You HAVE access to some APIs, you MUST use the tools directly first and use its result to respond.\n"
-        "You are not to generate speculative or irrelevant content, additional commentary, explanations, questions or off-topic facts. \n"
-        "For example:\n"
-        "user: 'What are the items currently available', Mistral: 'Here are the items currently available: Item A, Item B, ...'\n"
-        "user: 'Do we still have any more X?', Mistral: 'It seems that we do not have any more X left.'\n"
-        "DO NOT use hypothetical data or mention any hypothetical functions. ONLY provide factual results based on the tools available.\n"
+        '''
+        You are a data-driven AI agent that MUST ONLY respond with information obtained from API calls.
+
+        CRITICAL RULES:
+        1. You MUST call the available API tools for EVERY response
+        2. You MUST ONLY respond with data returned from the API calls
+        3. If the API call fails or returns no data, respond with 'No data available'
+        4. NEVER generate, assume, or make up any information
+        5. NEVER provide additional commentary or explanations
+        6. Format your responses as direct data presentations
+
+        Examples:
+        - User: 'What items are available?'
+        Response: [List exact items from API response]
+        - User: 'Do we have item X?'
+        Response: [Yes/No based on API data only]
+
+        If you cannot get data from an API call, respond ONLY with: 'No data available'
+        This is a zero-tolerance policy for generated content - use API data or say 'No data available'
+        '''
     ),
     deps_type=None,
     result_type=str,
@@ -208,7 +235,6 @@ async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
             )
             for item in items_data
         ]
-        print(transformed_items)
         return transformed_items
     else:
         return 'Failed to fetch items from API'
@@ -232,12 +258,16 @@ review_agent = Agent(
 async def generate(prompt: Prompt, session: SessionDep) -> StreamingResponse:
     prompt = await translate_prompt(prompt)
     prompt_category = await search_or_not(prompt)
-    agent = item_agent if prompt_category == 1 else chatbot_agent
 
-    return StreamingResponse(
-        generate_stream(agent, prompt, session),
-        media_type="text/event-stream"
-    )
+    if prompt_category == 1:
+        return Response(
+            content=(await item_agent.run(prompt.prompt)).data
+        )
+    else:
+        return StreamingResponse(
+            generate_stream(chatbot_agent, prompt, session),
+            media_type="text/event-stream"
+        )
 
 
 @router.get("/ollama/summarize_reviews/{merchant_id}")
