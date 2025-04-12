@@ -79,7 +79,7 @@
 
 		// Add user message to chat
 		const userMessage: Message = {
-			text: sanitizeHtml(await marked.parse(msg), sanitizeOptions),
+			text: msg,
 			is_sent: true,
 			image: imagePreview ?? undefined
 		};
