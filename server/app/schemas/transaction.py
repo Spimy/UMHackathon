@@ -7,8 +7,10 @@ class TransactionsItemsBase(BaseModel):
     item_id: str
     merchant_id: str
 
+
 class TransactionItemsCreate(TransactionsItemsBase):
     pass
+
 
 class Transaction(TransactionsItemsBase):
     id: int
@@ -27,8 +29,10 @@ class TransactionDataBase(BaseModel):
     eater_id: str
     merchant_id: str
 
+
 class TransactionDataCreate(TransactionDataBase):
     pass
+
 
 class TransactionData(TransactionDataBase):
     id: Optional[str]
@@ -39,6 +43,7 @@ class TransactionData(TransactionDataBase):
 
 class MerchantTransactionSummaryItem(BaseModel):
     item_id: str
+    item_name: str
     frequency: int
     total_value: float
 
@@ -47,4 +52,3 @@ class MerchantTransactionSummary(BaseModel):
     today: List[MerchantTransactionSummaryItem]
     this_week: List[MerchantTransactionSummaryItem]
     this_month: List[MerchantTransactionSummaryItem]
-
