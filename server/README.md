@@ -1,6 +1,11 @@
-# FastAPI Server
+# Server Setup
 
-A basic FastAPI server setup.
+The server is built using the following frameworks: 
+[FastAPI](https://fastapi.tiangolo.com/)
+[Pydantic](https://docs.pydantic.dev/latest/)
+[Pydantic AI](https://ai.pydantic.dev/)
+[OpenCV](https://opencv.org/)
+[Ollama](https://ollama.com/)
 
 ## Recommedned Python Version Manager
 
@@ -61,10 +66,33 @@ docker compose up -d
 3. To run the server, use:
 
 ```bash
-python main.py
+python app/main.py
 ```
 
 The server will be available at `http://localhost:8000`
+
+## Environment Variables
+you will have to create a `.env` file here to store the API keys and other variables
+
+```
+GEMINI_API_KEY=
+DATABASE_URI=postgresql://devuser:devpassword@localhost:5432/umhackathon
+```
+
+You may get your Gemini API keys from [here](https://aistudio.google.com/app/apikey).
+
+## Ollama
+To run an LLM in your local device, you may get [Ollama](https://ollama.com/)
+
+after installation, run the following commands:
+
+```
+# to download mistral:7b model
+ollama run mistral
+
+# Optionally: run ollama at background
+ollama serve
+```
 
 ## API Documentation
 

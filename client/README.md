@@ -1,18 +1,22 @@
-# sv
+# Client Setup
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+The client is built using the following frameworks:
+ [SvelteKit](https://kit.svelte.dev/)
+ [ApexCharts](https://apexcharts.com/)
+ [Tailwind](https://tailwindcss.com/)
+ [TypeScript](https://www.typescriptlang.org/)
 
-## Creating a project
+## Environment Variables
 
-If you're seeing this, you've probably already done this step. Congrats!
+Before setting up, you will have to create a `.env` file here to store the API keys and other variables
 
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
 ```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+AUTH_SECRET=
+PUBLIC_API_URL=http://127.0.0.1:8000
+```
+
 
 ## Developing
 
