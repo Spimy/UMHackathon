@@ -22,7 +22,6 @@
 	import { afterNavigate } from '$app/navigation';
 	import { PUBLIC_API_URL } from '$env/static/public';
 	import PieChart from '$lib/components/PieChart.svelte';
-	import type { ApexOptions } from 'apexcharts';
 	import { marked } from 'marked';
 	import sanitizeHtml from 'sanitize-html';
 	import { tick } from 'svelte';
@@ -49,34 +48,6 @@
 			return false;
 		}
 		return true;
-	};
-
-	const renderChart = async (msg: string, el: HTMLDivElement) => {
-		const res: PlotPointsResponse = JSON.parse(msg);
-
-		import('apexcharts').then((ApexCharts) => {
-			const options: ApexOptions = {
-				chart: {
-					type: 'pie',
-					foreColor: '#fefefe'
-				},
-				series: [
-					{
-						name: res.data_point,
-						data: res.data_points[res.time].map((point) => point[res.data_point])
-					}
-				],
-				dataLabels: {
-					enabled: false
-				},
-				tooltip: {
-					x: {
-						show: true
-					}
-				}
-			};
-			new ApexCharts.default(el, options).render();
-		});
 	};
 
 	const sanitizeOptions: sanitizeHtml.IOptions = {
@@ -274,7 +245,7 @@
 			<!-- Chat container -->
 			<div class="flex-1 overflow-y-auto p-4" bind:this={chatContainer} onscroll={handleScroll}>
 				<div class="mx-auto max-w-3xl space-y-4">
-					{#each messages as message (message.id)}
+					{#each messages as message}
 						<div class="flex {message.is_sent ? 'justify-end' : 'justify-start'} items-start gap-2">
 							{#if !message.is_sent}
 								<!-- Profile picture for the chatbot-->
