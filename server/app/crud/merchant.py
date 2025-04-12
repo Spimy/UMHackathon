@@ -20,5 +20,10 @@ def get_user(session: SessionDep, email: str):
     return session.execute(select(User).where(User.user_email == email)).first()
 
 
+def get_merchant_by_id(session: SessionDep, merchant_id: str):
+    return session.execute(select(Merchant).where(Merchant.merchant_id == merchant_id)).first()
+
+  
 def get_items_by_merchant(session: SessionDep, merchant_id: int):
     return session.execute(select(Item).where(Item.merchant_id == merchant_id)).all()
+
