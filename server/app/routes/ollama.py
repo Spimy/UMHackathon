@@ -35,6 +35,7 @@ available_APIs = [
 
 class Prompt(BaseModel):
     prompt: str
+    merchant_id: Optional[str] = None
     chat_id: Optional[int] = None
 
 
@@ -327,7 +328,9 @@ async def generate(prompt: Prompt, session: SessionDep) -> StreamingResponse:
         params = json.loads(query_analysis.data)
 
         # Then get transaction data
-        transactions = crud.get_merchant_transactions_summary(session, "5f1d3")
+        transactions = crud.get_merchant_transactions_summary(
+            session, prompt.merchant_id
+        )
         params['data_points'] = transactions
 
         return params
