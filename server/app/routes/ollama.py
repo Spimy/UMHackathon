@@ -265,9 +265,14 @@ transaction_agent = Agent(
 )
 
 
+class MerchantContext(BaseModel):
+    merchant_id: str
+
+
 @item_agent.tool
-async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
-    url = f'{FASTAPI_URL}/merchants/2e8a5/items'
+async def GET_items(ctx: RunContext[MerchantContext]) -> Union[str, List[Item]]:
+    url = f'{FASTAPI_URL}/merchants/{ctx.deps.merchant_id}/items'
+    print('spimy-url: ' + url)
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
 
@@ -286,17 +291,6 @@ async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
     else:
         return 'Failed to fetch items from API'
 
-
-@transaction_agent.tool
-async def GET_transactions() -> str:
-    url = f'{FASTAPI_URL}/transactions/5f1d3/summary'
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-
-    if response.status_code == 200:
-        data = response.json()
-        return data
-    return {"error": "No data available"}
 
 review_agent = Agent(
     model=ollama_model,
@@ -320,7 +314,7 @@ async def generate(prompt: Prompt, session: SessionDep) -> StreamingResponse:
     print("Prompt category: " + str(prompt_category))
     if prompt_category == 1:
         return Response(
-            content=(await item_agent.run(prompt.prompt)).data
+            content=(await item_agent.run(prompt.prompt, deps=MerchantContext(merchant_id=prompt.merchant_id))).data
         )
     elif prompt_category == 2:
         # First, analyze the query to determine data_point and time period
