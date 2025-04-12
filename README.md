@@ -32,6 +32,9 @@
   <a href='https://1drv.ms/p/c/93d0dcb6fb3b029b/EYAch3l00mlMqpaQRrBdCBkBZqK9pAzKfdJC0AbdqUOv9A'> CLICK ME FOR THE SLIDES </a> 
 </div>
 
+<div align="center">
+  <a href='https://imailsunwayedu-my.sharepoint.com/:v:/g/personal/22112478_imail_sunway_edu_my/EU65ovys9_9PnwO6WoOHix0Bghf81vrE-M3-jxoCASHrbQ?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=rQdBZE'> CLICK ME FOR THE DEMO VIDEO </a> 
+</div>
   
 **GrabBuddy** is a solution project for UMHackathon 2025 by Team 418, it is a platform to further empower entrepreneurs working with grab by leveraging Generative AI to create smart, intuitive chat-based assistants. These AI-driven interfaces allow for actionable insights and proactive guidance directly to merchants, enabling better business decisions and streamlined operations.
 
