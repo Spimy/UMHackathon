@@ -281,7 +281,9 @@
 								<img src="/icons/bot.svg" alt="Other Party" class="h-8 w-8 rounded-lg" />
 							{/if}
 							<div
-								class="prose bg-tertiary/[0.6] text-secondary max-w-[70%] rounded-lg p-3 shadow-sm"
+								class="prose bg-tertiary/[0.6] text-secondary {isJsonString(message.text)
+									? 'w-[65%]'
+									: 'w-fit'} rounded-lg p-3 shadow-sm"
 							>
 								{#if message.image}
 									<img

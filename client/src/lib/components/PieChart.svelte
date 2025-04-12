@@ -15,7 +15,8 @@
 			const options: ApexOptions = {
 				chart: {
 					type: 'pie',
-					foreColor: '#000000'
+					foreColor: '#000000',
+					height: '100%'
 				},
 				series: res.data_points[res.time].map((point) => point[res.data_point]),
 				labels: res.data_points[res.time].map((point) => point.item_name),
