@@ -454,18 +454,3 @@
 		</ul>
 	</aside>
 </main>
-
-<style lang="postcss">
-	@keyframes dot-pulse {
-		0%,
-		40%,
-		100% {
-			opacity: 0.3;
-			transform: scale(0.85);
-		}
-		20% {
-			opacity: 1;
-			transform: scale(1);
-		}
-	}
-</style>
