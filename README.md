@@ -23,8 +23,17 @@
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/ff428c8d-18be-4348-86fe-a78239a86a57" alt="Slides Preview" height="300">
+</div>
 
+<div align="center">
+  <a href='https://1drv.ms/p/c/93d0dcb6fb3b029b/EYAch3l00mlMqpaQRrBdCBkBZqK9pAzKfdJC0AbdqUOv9A'> CLICK ME FOR THE SLIDES </a> 
+</div>
+
+  
 **GrabBuddy** is a solution project for UMHackathon 2025 by Team 418, it is a platform to further empower entrepreneurs working with grab by leveraging Generative AI to create smart, intuitive chat-based assistants. These AI-driven interfaces allow for actionable insights and proactive guidance directly to merchants, enabling better business decisions and streamlined operations.
+
 
 ### Problem Statement
 
@@ -103,9 +112,11 @@ Some of the data were provided by the hosts of UMHackathon, while some were gene
   
 ## Installation
 
+This repository includes both the codebase for the frontend and the backend, follow the steps mentioned below to run the code:
 ### Client
-
+<a href='https://github.com/Spimy/UMHackathon/blob/Readme/client/README.md'> CLICK HERE FOR THE SETUP STEPS FOR FRONTEND </a>
 ### Server
+<a href='https://github.com/Spimy/UMHackathon/blob/Readme/server/README.md'> CLICK HERE FOR THE SETUP STEPS FOR BACKEND </a>
 
 Team 418 members:
 
