@@ -1,9 +1,33 @@
 <script lang="ts">
+	import { PUBLIC_API_URL } from '$env/static/public';
 	import StatCard, { colours, type Colour } from '$lib/components/StatCard.svelte';
 	import { type ApexOptions } from 'apexcharts';
 	import { onMount } from 'svelte';
+	import type { ReviewData } from './+page.server.js';
+
+	type ClientReview = {
+		summary: string;
+		rating: string;
+	};
 
 	let { data } = $props();
+	let reviews = $state<{ [key: string]: { summary: string; rating: string } }>({});
+
+	onMount(async () => {
+		for (const merchant of data.merchants) {
+			const res = await fetch(`${PUBLIC_API_URL}/ollama/summarize_reviews/${merchant.id}`);
+			const reviewData: ReviewData = await res.json();
+
+			reviews[merchant.id] = {
+				summary: reviewData.review_summary,
+				rating: String(Math.round(reviewData.average_rating))
+			};
+
+			console.log(reviews);
+
+			reviews = reviews;
+		}
+	});
 
 	const numFormat = (value: number) => {
 		return Intl.NumberFormat('en-US', {
@@ -221,10 +245,36 @@
 							alt="You"
 							class="h-8 w-8 rounded-full"
 						/>
+
 						<span class="text-md">{merchant.name}</span>
-						<span class="m-2 text-sm">{merchant.rating} / 5</span>
+
+						{#if reviews[merchant.id]}
+							<span class="m-2 text-sm">{reviews[merchant.id].rating} / 5 </span>
+						{:else}
+							<span class="m-2 flex items-center text-sm"
+								><div
+									class="m-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+								></div>
+								/ 5
+							</span>
+						{/if}
 					</div>
-					<p class="m-4 flex-1 text-justify">{merchant.review_summary}</p>
+					{#if reviews[merchant.id]}
+						<p class="m-4 flex-1 text-justify">{reviews[merchant.id].summary}</p>
+					{:else}
+						<p class="m-4 flex-1 text-justify">
+							Loading summary
+							<span class="ml-1 inline-flex gap-1">
+								<span class="animate-dot-pulse h-2 w-2 rounded-full bg-white/[0.8]"></span>
+								<span
+									class="animate-dot-pulse h-2 w-2 rounded-full bg-white/[0.8] [animation-delay:200ms]"
+								></span>
+								<span
+									class="animate-dot-pulse h-2 w-2 rounded-full bg-white/[0.8] [animation-delay:400ms]"
+								></span>
+							</span>
+						</p>
+					{/if}
 				</div>
 			{/each}
 		</div>
