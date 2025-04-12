@@ -114,7 +114,7 @@ async def search_or_not(prompt: Prompt):
             RULES:
             1. You MUST categorize ALL inquiries into one of these categories:
             - Category 1: Inventory/graph related inquiries (requires GET_items API)
-            - Category 2: Transaction related inquiries
+            - Category 2: Transaction related inquiries (requires GET_transactions API)
             - Category 0: General conversation/greetings
 
             2. You MUST return valid JSON for EVERY response
@@ -127,6 +127,9 @@ async def search_or_not(prompt: Prompt):
 
             User: "Do you sell ice cream?"
             Response: {"category": 1, "reasoning": "Inventory inquiry, requires GET_items API call"}
+            
+            User: "What are the sales today?"
+            Response: {"category": 2, "reasoning": "Inventory inquiry, requires GET_transactions API call"}
 
             Remember: ALWAYS return response in valid JSON format with category and reasoning fields.
             ''' + f"\nAvailable APIs: {available_APIs}"
@@ -217,6 +220,90 @@ item_agent = Agent(
     result_type=str,
 )
 
+transaction_agent = Agent(
+    model=ollama_model,
+    name="Transaction_Agent",
+    system_prompt=(
+        '''
+        You are a data-driven AI agent that MUST use the GET_transactions API call data.
+
+        CRITICAL RULES:
+        1. You MUST call GET_transactions API for EVERY response
+        2. You MUST use the actual API response data in your response
+        3. You MUST format responses in this JSON structure:
+           {
+               "data_point": "frequency" or "total_value",
+               "data_points": <INSERT THE EXACT API RESPONSE HERE>,
+               "time": "today" or "this_week" or "this_month"
+           }
+
+        Process:
+        1. Call GET_transactions API
+        2. Take the API response and insert it directly into data_points
+        3. Analyze user query to determine data_point type and time period
+        4. Return the JSON with the actual API data
+
+        Examples:
+        If GET_transactions returns {
+            "today": [
+                {
+                "item_id": "string",
+                "frequency": 0,
+                "total_value": 0
+                }
+            ],
+            "this_week": [
+                {
+                "item_id": "string",
+                "frequency": 0,
+                "total_value": 0
+                }
+            ],
+            "this_month": [
+                {
+                "item_id": "string",
+                "frequency": 0,
+                "total_value": 0
+                }
+            ]
+        }, then:
+        
+        User: "Show me today's sales"
+        Response: {
+            "data_point": "frequency",
+            "data_points": {
+                "today": [
+                    {
+                    "item_id": "string",
+                    "frequency": 0,
+                    "total_value": 0
+                    }
+                ],
+                "this_week": [
+                    {
+                    "item_id": "string",
+                    "frequency": 0,
+                    "total_value": 0
+                    }
+                ],
+                "this_month": [
+                    {
+                    "item_id": "string",
+                    "frequency": 0,
+                    "total_value": 0
+                    }
+                ]
+            },
+            "time": "today"
+        }
+
+        DO NOT modify or generate data - use the exact API response in data_points.
+        '''
+    ),
+    deps_type=None,
+    result_type=str,
+)
+
 
 @item_agent.tool
 async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
@@ -240,6 +327,18 @@ async def GET_items(ctx: RunContext[None]) -> Union[str, List[Item]]:
         return 'Failed to fetch items from API'
 
 
+@transaction_agent.tool
+async def GET_transactions(ctx: RunContext[None]) -> str:
+    url = f'{FASTAPI_URL}/transactions/2e8a5/summary'
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        print(f"spimy-data: {data}")
+        return data
+    return {"error": "No data available"}
+
 review_agent = Agent(
     model=ollama_model,
     name="Review_Agent",
@@ -259,9 +358,15 @@ async def generate(prompt: Prompt, session: SessionDep) -> StreamingResponse:
     prompt = await translate_prompt(prompt)
     prompt_category = await search_or_not(prompt)
 
+    print("Prompt category: " + str(prompt_category))
     if prompt_category == 1:
         return Response(
             content=(await item_agent.run(prompt.prompt)).data
+        )
+    elif prompt_category == 2:
+        return Response(
+            content=(await transaction_agent.run(prompt.prompt)).data,
+            media_type="application/json"
         )
     else:
         return StreamingResponse(
