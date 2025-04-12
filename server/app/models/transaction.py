@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
+from datetime import datetime
 
 class TransactionItems(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -10,7 +11,7 @@ class TransactionItems(SQLModel, table=True):
 class TransactionData(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     order_id: str
-    order_time: str
+    order_time: datetime
     driver_arrival_time: str
     driver_pickup_time: str
     delivery_time: str

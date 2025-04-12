@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 
 class TransactionsItemsBase(BaseModel):
@@ -35,4 +35,16 @@ class TransactionData(TransactionDataBase):
 
     class Config:
         orm_mode = True
+
+
+class MerchantTransactionSummaryItem(BaseModel):
+    item_id: str
+    frequency: int
+    total_value: float
+
+
+class MerchantTransactionSummary(BaseModel):
+    today: List[MerchantTransactionSummaryItem]
+    this_week: List[MerchantTransactionSummaryItem]
+    this_month: List[MerchantTransactionSummaryItem]
 
