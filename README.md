@@ -13,6 +13,7 @@
     <li><a href="#about-the-project">About The Project</a></li>
     <li><a href="#data-utilization">Data Utilization</a></li>
     <li><a href="#personalization-strategies">Personalization Strategies</a></li>
+    <li><a href="#ui-figma-design">UI Figma Design</a></li>
     <li><a href="#solution-architecture">Solution Architecture</a></li>
     <li><a href="#installation">Installation</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
