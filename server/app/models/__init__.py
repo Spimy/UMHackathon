@@ -77,11 +77,11 @@ def populate_database():
                     review=row['review']
                 )
                 session.add(review)
-                
-                
+
         # Check and populate transactionsData
         if session.execute(select(TransactionData)).first() is None:
-            transactionData_df = pd.read_csv(dataset_path / "transaction_data.csv")
+            transactionData_df = pd.read_csv(
+                dataset_path / "transaction_data.csv")
             for _, row in transactionData_df.iterrows():
                 try:
                     transactionData = TransactionData(
@@ -98,16 +98,17 @@ def populate_database():
                 except Exception as e:
                     print(f"Error adding transaction data: {e}")
                     continue
-                
+
         # Check and populate transactionsItems
         if session.execute(select(TransactionItems)).first() is None:
-            transactionItems_df = pd.read_csv(dataset_path / "transaction_items.csv")
+            transactionItems_df = pd.read_csv(
+                dataset_path / "transaction_items.csv")
             for _, row in transactionItems_df.iterrows():
                 try:
                     transactionItem = TransactionItems(
-                        order_id = row['order_id'],
-                        item_id = row['item_id'],
-                        merchant_id = row['merchant_id']
+                        order_id=row['order_id'],
+                        item_id=row['item_id'],
+                        merchant_id=row['merchant_id']
                     )
                     session.add(transactionItem)
                 except Exception as e:
@@ -118,8 +119,8 @@ def populate_database():
         if session.execute(select(User)).first() is None:
             users = {
                 'williamlaw.3001@gmail.com': '7d4e1',
-                'justinyww@gmail.com': '7f2c1',
-                'alexcheekh@gmail.com': '6a0c3',
+                'justinyww@gmail.com': '6a0c3',
+                'alexcheekh@gmail.com': '7f2c1',
                 'jb.brubusiness3@gmail.com': '5c1f8'
             }
 
