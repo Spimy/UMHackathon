@@ -15,3 +15,8 @@ def create_keyword(keyword: KeywordCreate, session: SessionDep):
 def read_keywords(session: SessionDep, skip: int = 0, limit: int = 10):
     keywords = crud.get_keywords(session, skip=skip, limit=limit)
     return [keyword[0] for keyword in keywords]
+
+
+@router.get("/keywords/by-category/")
+def read_keywords_by_category(session: SessionDep):
+    return crud.get_keywords_by_category(session)

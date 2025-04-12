@@ -27,7 +27,8 @@
 		"ms-vscode-remote.remote-wsl",
 		"svelte.svelte-vscode",
 		"stordahl.sveltekit-snippets",
-		"ms-python.black-formatter"
+		"ms-python.black-formatter",
+		"mgesbert.python-path"
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
 	"unwantedRecommendations": [

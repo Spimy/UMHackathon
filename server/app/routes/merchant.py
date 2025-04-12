@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import crud
 from schemas import Merchant, MerchantName, MerchantCreate, User
+from schemas import Merchant, MerchantCreate, User, Item
 from models import SessionDep
 
 router = APIRouter(tags=["merchants"])
@@ -34,9 +35,17 @@ def read_merchant(email: str, session: SessionDep):
     raise HTTPException(status_code=404, detail="User not found")
 
 
+
 @router.get("/merchants/{merchant_id}", response_model=MerchantName)
 def get_merchant_name(merchant_id: str, session: SessionDep):
     merchant = crud.get_merchant_by_id(session, merchant_id)
     if merchant:
         return {"merchant_name": merchant[0].merchant_name}
     raise HTTPException(status_code=404, detail="Merchant not found")
+
+@router.get("/merchants/{merchant_id}/items", response_model=list[Item])
+def read_items_by_merchant(merchant_id: str, session: SessionDep):
+    items = crud.get_items_by_merchant(session, merchant_id)
+    return [item[0] for item in items]
+
+
