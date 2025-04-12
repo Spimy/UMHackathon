@@ -90,7 +90,7 @@ Some of the data were provided by the hosts of UMHackathon, while some were gene
   <img src="https://github.com/user-attachments/assets/b9b1229d-7356-4844-96be-22c9ea965ba3" alt="Overview" height="300">
 </a>
 <a>
-  <img src="https://github.com/user-attachments/assets/6ad2496e-b529-4f71-a9da-c6c18e2bc913" alt="Chat" height="300">
+  <img src="https://github.com/user-attachments/assets/070123df-ae41-4716-83de-25cdd5d7aed2" alt="Chat" height="300">
 </a> <br/>
 <a href='https://www.figma.com/proto/1NRKS2Fl2SR0sYbWPWOrhZ/UM-Hackathon?page-id=0%3A1&node-id=2506-4757&p=f&viewport=-341%2C-
   261%2C0.2&t=FepnjYQum9eWRZhD-1&scaling=scale-down&content-scaling=fixed&starting-point-node-id=2506%3A4757'> CLICK ME FOR THE FIGMA PROTOTYPE</a> 
