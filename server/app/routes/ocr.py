@@ -5,8 +5,10 @@ import time
 import uuid
 from google import genai
 from google.genai import types
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, Form, Request, UploadFile
 from fastapi.responses import StreamingResponse
+from crud import chat
+from models import SessionDep
 from settings import GEMINI_API_KEY
 
 router = APIRouter(tags=["OCR"])
@@ -29,7 +31,7 @@ def generate_unique_filename(original_filename: str) -> str:
 
 
 @router.post("/ocr/generate")
-def generate(image: UploadFile) -> StreamingResponse:
+def generate(request: Request, image: UploadFile, session: SessionDep, chat_id: int = Form(...)) -> StreamingResponse:
     # Generate a unique filename
     unique_filename = generate_unique_filename(image.filename)
     file_path = UPLOADS_DIR / unique_filename
@@ -37,6 +39,15 @@ def generate(image: UploadFile) -> StreamingResponse:
     # Save the uploaded file using absolute path
     with open(file_path, "wb") as f:
         f.write(image.file.read())
+
+    image_url = f"{request.base_url}uploads/{unique_filename}"
+    chat.add_message(
+        session,
+        {
+            'chat_id': chat_id,
+            'image': image_url, 'is_sent': True
+        }
+    )
 
     # Reset file pointer to beginning for OCR processing
     image.file.seek(0)

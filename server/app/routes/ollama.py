@@ -4,10 +4,12 @@ import logging
 from pydantic import BaseModel
 import httpx
 from pydantic_ai import Agent, RunContext
-from typing import List, Union
+from typing import List, Union, Optional
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 import json
+import crud
+from models import SessionDep
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR,
@@ -16,8 +18,6 @@ logging.basicConfig(level=logging.ERROR,
 router = APIRouter(tags=["ollama"])
 
 FASTAPI_URL = "http://localhost:8000"
-
-convo_history = []
 
 available_APIs = [
     {
@@ -31,6 +31,13 @@ available_APIs = [
         "arguments": {"merchant_id": "str", "session": "SessionDep"}
     }
 ]
+
+
+
+class Prompt(BaseModel):
+    prompt: str
+    chat_id: Optional[int] = None
+
 
 class Item(BaseModel):
     '''Define Result Model'''
@@ -47,10 +54,32 @@ ollama_model = OpenAIModel(
 
 async def generate_stream(agent, prompt: str):
     async with agent.run_stream(prompt) as result:
-        async for text in result.stream(debounce_by=0.01):
-            yield text.strip()
+      async def get_chat_history(session: SessionDep, chat_id: Optional[int]) -> str:
+    """Get the chat history for context"""
+    if not chat_id:
+        return ""
 
-    convo_history.append({"user": prompt, "bot": result})
+    messages = crud.get_chat_messages(session, chat_id)
+    history = []
+    for msg in messages:
+        role = "User" if msg.is_sent else "Assistant"
+        history.append(f"{role}: {msg.text}")
+
+    return "\n".join(history)
+
+
+async def generate_stream(agent, prompt: Prompt, session: Optional[SessionDep] = None):
+    # Get chat history for context if chat_id is provided
+    context = ""
+    if session and prompt.chat_id:
+        context = await get_chat_history(session, prompt.chat_id)
+        if context:
+            context = f"Previous conversation:\n{context}\n\nCurrent message: {prompt.prompt}"
+
+    # Use context if available, otherwise just the prompt
+    input_text = context if context else prompt.prompt
+    async with agent.run_stream(input_text) as result:
+
 
 
 async def translate_prompt(prompt: str, target_language='en') -> str:
@@ -72,6 +101,7 @@ async def translate_prompt(prompt: str, target_language='en') -> str:
             print(f"Translation failed: {e}")
 
     return prompt
+
 
 
 async def search_or_not(prompt: str, context: str):
@@ -227,6 +257,17 @@ async def generate(userMessage: dict, context="These are the previous prompts an
     else:
         return StreamingResponse(generate_stream(chatbot_agent, prompt), media_type="text/event-stream")
     
+async def generate(prompt: Prompt, session: SessionDep) -> StreamingResponse:
+    prompt = await translate_prompt(prompt)
+    prompt_category = await search_or_not(prompt)
+    agent = inventory_agent if prompt_category == 1 else chatbot_agent
+
+    return StreamingResponse(
+        generate_stream(agent, prompt, session),
+        media_type="text/event-stream"
+    )
+
+
 @router.post("/ollama/summarize_reviews")
 async def summarize_reviews(merchant_id: str) -> StreamingResponse:
     url = f'{FASTAPI_URL}/reviews/{merchant_id}'

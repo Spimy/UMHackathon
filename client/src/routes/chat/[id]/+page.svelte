@@ -1,34 +1,16 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { afterNavigate } from '$app/navigation';
 	import { PUBLIC_API_URL } from '$env/static/public';
 	import { marked } from 'marked';
 	import sanitizeHtml from 'sanitize-html';
 	import { tick } from 'svelte';
-
-	interface Message {
-		text: string;
-		isSent: boolean;
-		image: string | null;
-	}
-
-	interface Chat {
-		id: number;
-		name: string;
-	}
+	import type { Message } from './+page.server.js';
 
 	let { data } = $props();
 
 	let msg = $state('');
-	let messages: Message[] = $state([
-		{ text: 'Hey there! 👋', isSent: false, image: null },
-		{ text: 'Hi! How are you?', isSent: true, image: null },
-		{ text: "I'm doing great, thanks for asking!", isSent: false, image: null }
-	]);
-
-	let chats: Chat[] = $state([
-		{ id: 1, name: 'Chat 1' },
-		{ id: 2, name: 'Chat 2' },
-		{ id: 3, name: 'Chat 3' }
-	]);
+	let messages: Message[] = $derived(data.messages);
 
 	let textarea: HTMLTextAreaElement | null = $state(null);
 	let isStreaming = $state(false);
@@ -75,6 +57,17 @@
 		autoScrollEnabled = true;
 		scrollToBottom();
 	};
+	afterNavigate(() => enableAutoScroll());
+
+	const saveMessage = async (message: Message) => {
+		await fetch(`${PUBLIC_API_URL}/chat/${data.chatId}/messages`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ ...message })
+		});
+	};
 
 	const sendMessage = async () => {
 		if (!msg.trim() && !selectedImage) return;
@@ -85,10 +78,10 @@
 		}, 100);
 
 		// Add user message to chat
-		const userMessage = {
+		const userMessage: Message = {
 			text: sanitizeHtml(await marked.parse(msg), sanitizeOptions),
-			isSent: true,
-			image: imagePreview
+			is_sent: true,
+			image: imagePreview ?? undefined
 		};
 		messages = [...messages, userMessage];
 		msg = '';
@@ -108,6 +101,7 @@
 			if (selectedImage) {
 				const formData = new FormData();
 				formData.append('image', selectedImage);
+				formData.append('chat_id', String(data.chatId));
 
 				response = await fetch(`${PUBLIC_API_URL}/ocr/generate`, {
 					method: 'POST',
@@ -121,6 +115,7 @@
 					},
 					body: JSON.stringify({ prompt: userMessage.text })
 				});
+				saveMessage(userMessage);
 			}
 
 			const reader = response.body?.getReader();
@@ -148,14 +143,21 @@
 			}
 
 			// Add the complete response to messages
-			messages = [...messages, { text: markdownStreamingMessage, isSent: false, image: null }];
+			const finalMessage = { text: markdownStreamingMessage, is_sent: false, image: undefined };
+			messages = [...messages, finalMessage];
+			await saveMessage(finalMessage);
+
 			currentStreamingMessage = '';
 			markdownStreamingMessage = '';
 		} catch (error) {
 			console.error('Error:', error);
 			messages = [
 				...messages,
-				{ text: 'Sorry, there was an error processing your message.', isSent: false, image: null }
+				{
+					text: 'Sorry, there was an error processing your message.',
+					is_sent: false,
+					image: undefined
+				}
 			];
 		} finally {
 			isStreaming = false;
@@ -204,8 +206,8 @@
 			<div class="flex-1 overflow-y-auto p-4" bind:this={chatContainer} onscroll={handleScroll}>
 				<div class="mx-auto max-w-3xl space-y-4">
 					{#each messages as message}
-						<div class="flex {message.isSent ? 'justify-end' : 'justify-start'} items-start gap-2">
-							{#if !message.isSent}
+						<div class="flex {message.is_sent ? 'justify-end' : 'justify-start'} items-start gap-2">
+							{#if !message.is_sent}
 								<!-- Profile picture for the chatbot-->
 								<img src="/icons/bot.svg" alt="Other Party" class="h-8 w-8 rounded-lg" />
 							{/if}
@@ -222,7 +224,7 @@
 
 								{@html sanitizeHtml(message.text, sanitizeOptions)}
 							</div>
-							{#if message.isSent}
+							{#if message.is_sent}
 								<!-- Profile picture for the user -->
 								<img
 									src={data.session?.user?.image ||
@@ -378,21 +380,27 @@
 		<h2 class="text-lg font-bold text-white">Chats</h2>
 		<p class="text-white">All your chats in one place</p>
 
-		<!-- + New Chat Button -->
-		<button
-			class="bg-highlight text-tertiary text-mdsemi mt-4 w-full cursor-pointer rounded-lg px-4 py-2"
-		>
-			&plus; &nbsp; New Chat
-		</button>
+		<form action="?/createChat" method="POST" use:enhance>
+			<!-- + New Chat Button -->
+			<button
+				class="bg-highlight text-tertiary text-mdsemi mt-4 w-full cursor-pointer rounded-lg px-4 py-2"
+			>
+				&plus; &nbsp; New Chat
+			</button>
+		</form>
 
 		<!-- Dummy Chat List -->
 		<ul class="mt-4 space-y-2">
-			{#each chats as chat}
+			{#each data.chats as chat}
 				<li
-					class="bg-secondary/[0.5] hover:bg-secondary/[0.8] flex cursor-pointer gap-2 rounded-lg p-3 text-white"
+					class="{chat.id === data.chatId
+						? 'bg-secondary/[0.8]'
+						: ''} bg-secondary/[0.5] hover:bg-secondary/[0.8] cursor-pointer rounded-lg p-3 text-white"
 				>
-					<img src="/icons/message.svg" alt="message icon" />
-					<span class="text-md">{chat.name}</span>
+					<a href="/chat/{chat.id}" class="flex gap-2">
+						<img src="/icons/message.svg" alt="message icon" />
+						<span class="text-md">{chat.name}</span>
+					</a>
 				</li>
 			{/each}
 		</ul>
