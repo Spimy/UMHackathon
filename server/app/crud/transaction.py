@@ -30,14 +30,14 @@ def get_merchant_transactions_summary(session: SessionDep, merchant_id: str):
         ).all()
 
         for row in summaries:
-            (item_id, frequence, total_value) = row[0]
+            (item_id, frequency, total_value) = row
             item = session.execute(select(Item.item_name).where(
                 Item.item_id == item_id)).first()
 
             final.append({
                 'item_id': item_id,
                 'item_name': item[0],
-                'frequency': frequence,
+                'frequency': frequency,
                 'total_value': total_value,
             })
 
