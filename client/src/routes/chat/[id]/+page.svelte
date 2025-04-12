@@ -172,7 +172,7 @@
 					headers: {
 						'Content-Type': 'application/json'
 					},
-					body: JSON.stringify({ prompt: userMessage.text })
+					body: JSON.stringify({ prompt: userMessage.text, merchant_id: data.user?.merchant_id })
 				});
 				saveMessage(userMessage);
 			}
@@ -274,7 +274,7 @@
 			<!-- Chat container -->
 			<div class="flex-1 overflow-y-auto p-4" bind:this={chatContainer} onscroll={handleScroll}>
 				<div class="mx-auto max-w-3xl space-y-4">
-					{#each messages as message}
+					{#each messages as message (message.id)}
 						<div class="flex {message.is_sent ? 'justify-end' : 'justify-start'} items-start gap-2">
 							{#if !message.is_sent}
 								<!-- Profile picture for the chatbot-->
