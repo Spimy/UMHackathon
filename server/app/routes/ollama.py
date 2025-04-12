@@ -33,7 +33,6 @@ available_APIs = [
 ]
 
 
-
 class Prompt(BaseModel):
     prompt: str
     chat_id: Optional[int] = None
@@ -51,10 +50,7 @@ ollama_model = OpenAIModel(
     model_name='mistral', provider=OpenAIProvider(base_url='http://localhost:11434/v1')
 )
 
-
-async def generate_stream(agent, prompt: str):
-    async with agent.run_stream(prompt) as result:
-      async def get_chat_history(session: SessionDep, chat_id: Optional[int]) -> str:
+async def get_chat_history(session: SessionDep, chat_id: Optional[int]) -> str:
     """Get the chat history for context"""
     if not chat_id:
         return ""
@@ -79,19 +75,18 @@ async def generate_stream(agent, prompt: Prompt, session: Optional[SessionDep] =
     # Use context if available, otherwise just the prompt
     input_text = context if context else prompt.prompt
     async with agent.run_stream(input_text) as result:
+        async for text in result.stream(debounce_by=0.01):
+            yield text.strip()
 
-
-
-async def translate_prompt(prompt: str, target_language='en') -> str:
+async def translate_prompt(prompt: Prompt, target_language='en') -> str:
     url = "https://translate.spimy.dev/translate"
     headers = {"Content-Type": "application/json"}
     data = {
-        "q": f"{prompt}",
+        "q": f"{prompt.prompt}",
         "source": "auto",
         "target": f"{target_language}",
         "format": "text",
     }
-
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(url, json=data, headers=headers)
@@ -99,9 +94,7 @@ async def translate_prompt(prompt: str, target_language='en') -> str:
             prompt = response_json.get("translatedText", "")
         except httpx.RequestError as e:
             print(f"Translation failed: {e}")
-
     return prompt
-
 
 
 async def search_or_not(prompt: str, context: str):
@@ -267,7 +260,6 @@ async def generate(prompt: Prompt, session: SessionDep) -> StreamingResponse:
         generate_stream(agent, prompt, session),
         media_type="text/event-stream"
     )
-
 
 @router.post("/ollama/summarize_reviews")
 async def summarize_reviews(merchant_id: str) -> StreamingResponse:
