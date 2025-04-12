@@ -6,6 +6,11 @@ import type { ChatResponse } from './[id]/+page.server';
 export const load: PageServerLoad = async ({ locals, fetch }) => {
 	const session = (await locals.auth())!;
 
+	const chats: ChatResponse[] = await fetch(`${PUBLIC_API_URL}/chat/${session.user?.email}`).then(
+		(res) => res.json()
+	);
+	if (chats.length > 0) redirect(303, `/chat/${chats[0].id}`);
+
 	const chat: ChatResponse = await fetch(`${PUBLIC_API_URL}/chat`, {
 		method: 'POST',
 		headers: {
